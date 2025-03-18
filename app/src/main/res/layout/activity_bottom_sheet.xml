@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="#FFFFFF"
+    tools:context=".BottomSheetActivity"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="10dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/button_primary"/>
+
+    <LinearLayout
+        android:id="@+id/searchBarContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:layout_gravity="center"
+        android:background="@drawable/input_background"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <ImageView
+            android:id="@+id/searchIcon"
+            android:layout_marginTop="8dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_search"/>
+
+        <EditText
+            android:id="@+id/searchInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Search"
+            android:textSize="14sp"
+            android:textColorHint="#8F9098"
+            android:padding="8dp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/listItemBar"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!--This is the first item in the list-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_gravity="top"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="205dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@drawable/button_primary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:orientation="vertical"
+                android:layout_marginLeft="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:hint="Name" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:hint="Address found"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:hint="Details and Descriprion"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!--This is the second item in the list-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_gravity="top"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="205dp"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:background="@drawable/button_primary" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:orientation="vertical"
+                android:layout_marginLeft="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:hint="Name" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="20dp"
+                    android:hint="Address found"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:hint="Details and Descriprion"/>
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+</LinearLayout>
