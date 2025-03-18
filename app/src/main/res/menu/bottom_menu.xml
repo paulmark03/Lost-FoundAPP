@@ -3,8 +3,8 @@
 
 
     <item
-        android:id="@+id/bottom_chat"
-        android:icon="@drawable/messages_icon"
+        android:id="@+id/bottom_map"
+        android:icon="@drawable/post_icon"
         android:title="Messages"/>
     <item
         android:id="@+id/bottom_search"
@@ -15,8 +15,8 @@
         android:icon="@drawable/settings_icon"
         android:title="Settings"/>
     <item
-        android:id="@+id/bottom_post"
-        android:icon="@drawable/post_icon"
+        android:id="@+id/bottom_chat"
+        android:icon="@drawable/messages_icon"
         android:title="Post"/>
 
 </menu>

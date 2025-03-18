@@ -12,6 +12,7 @@ constraintlayout = "2.2.1"
 materialVersion = "1.3.0 alpha01"
 googleGmsGoogleServices = "4.4.2"
 firebaseDatabase = "21.0.0"
+firebaseAuth = "23.2.0"
 
 [libraries]
 fragment = { module = "androidx.fragment:fragment", version.ref = "fragment" }
@@ -25,6 +26,7 @@ constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayo
 material-v130alpha01 = { module = "com.google.android.material:material", version.ref = "materialVersion" }
 material-vversion = { module = "com.google.android.material:material", version.ref = "googleMaterial" }
 firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

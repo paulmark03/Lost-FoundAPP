@@ -9,9 +9,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.Firebase;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -19,8 +19,8 @@ public class RegisterActivity extends AppCompatActivity {
     private CheckBox termsCheckbox;
     private Button signupButton;
     private TextView loginRedirect;
-    FirebaseDatabase database;
-    DatabaseReference reference;
+    private FirebaseAuth auth; // Firebase Authentication instance
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,15 +35,15 @@ public class RegisterActivity extends AppCompatActivity {
         signupButton = findViewById(R.id.signupButton);
         loginRedirect = findViewById(R.id.loginRedirect);
 
+        // Initialize Firebase Authentication
+        auth = FirebaseAuth.getInstance();
+
         // Sign Up Button Click
         signupButton.setOnClickListener(v -> {
-            database = FirebaseDatabase.getInstance();
-            reference = database.getReference("users");
             String name = nameInput.getText().toString().trim();
             String email = emailInput.getText().toString().trim();
             String password = passwordInput.getText().toString().trim();
             String confirmPassword = confirmPasswordInput.getText().toString().trim();
-
 
             // Basic Validation
             if (name.isEmpty() || email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty()) {
@@ -61,15 +61,30 @@ public class RegisterActivity extends AppCompatActivity {
                 return;
             }
 
-            HelperClass helperClass = new HelperClass(name, email, password);
-            reference.child(name).setValue(helperClass);
+            // Use Firebase Authentication to create a new user
+            auth.createUserWithEmailAndPassword(email, password)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Update the user's display name
+                            FirebaseUser user = auth.getCurrentUser();
+                            if (user != null) {
+                                UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                        .setDisplayName(name)
+                                        .build();
+                                user.updateProfile(profileUpdates);
+                            }
 
-            Toast.makeText(RegisterActivity.this, "Sign Up Successful!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(RegisterActivity.this, "Sign Up Successful!", Toast.LENGTH_SHORT).show();
 
-            // Navigate to Login Page
-            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+                            // Navigate to Login Page
+                            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            // Display the error message from Firebase
+                            Toast.makeText(RegisterActivity.this, "Sign Up Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
         });
 
         // Redirect to Login
