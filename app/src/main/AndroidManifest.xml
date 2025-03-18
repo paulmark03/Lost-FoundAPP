@@ -22,7 +22,7 @@
             android:name=".MapActivity"
             android:exported="false" />
         <activity
-            android:name=".BottomSheetActivity"
+            android:name=".SearchActivity"
             android:exported="false" />
         <activity android:name=".RegisterActivity" />
         <activity

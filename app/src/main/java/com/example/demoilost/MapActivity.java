@@ -31,7 +31,7 @@ public class MapActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
 
         searchButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MapActivity.this, BottomSheetActivity.class);
+            Intent intent = new Intent(MapActivity.this, SearchActivity.class);
             startActivity(intent);
         });
 
@@ -41,7 +41,7 @@ public class MapActivity extends AppCompatActivity {
                 // Already in MapActivity, no action needed
                 return true;
             } else if (id == R.id.bottom_search) {
-                startActivity(new Intent(MapActivity.this, BottomSheetActivity.class));
+                startActivity(new Intent(MapActivity.this, SearchActivity.class));
                 return true;
             } else if (id == R.id.bottom_settings) {
                 startActivity(new Intent(MapActivity.this, SettingsActivity.class));
