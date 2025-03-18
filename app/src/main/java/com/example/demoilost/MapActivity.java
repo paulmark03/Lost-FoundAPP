@@ -10,9 +10,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 
-public class MapActivity extends AppCompatActivity {
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallBack {
+
+    private GoogleMap map;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,9 +35,13 @@ public class MapActivity extends AppCompatActivity {
             return insets;
         });
 
+        SuportMapFragment mapFragment = (SuportMapFragment) getSuportFragmentManager()
+                .findFragmentById(R.id.map_container);
+
         ImageButton searchButton = findViewById(R.id.search_location_button);
         TextView currentLocation = findViewById(R.id.current_location);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
+        bottomNavigationView.setSelectedItemId(R.id.bottom_map);
 
         searchButton.setOnClickListener(v -> {
             Intent intent = new Intent(MapActivity.this, SearchActivity.class);
@@ -42,9 +55,18 @@ public class MapActivity extends AppCompatActivity {
                 return true;
             } else if (id == R.id.bottom_search) {
                 startActivity(new Intent(MapActivity.this, SearchActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                finish();
                 return true;
             } else if (id == R.id.bottom_settings) {
                 startActivity(new Intent(MapActivity.this, SettingsActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                finish();
+                return true;
+            } else if (id == R.id.bottom_chat) {
+                startActivity(new Intent(MapActivity.this, MessagesActivity.class));
+                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+                finish();
                 return true;
             }
             return false;
