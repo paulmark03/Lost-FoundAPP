@@ -6,6 +6,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -19,9 +20,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapActivity extends AppCompatActivity {
+import kotlin.LateinitKt;
 
-    private GoogleMap map;
+public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
+
+    private GoogleMap myMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,8 @@ public class MapActivity extends AppCompatActivity {
             return insets;
         });
 
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
 
         ImageButton searchButton = findViewById(R.id.search_location_button);
         TextView currentLocation = findViewById(R.id.current_location);
@@ -69,5 +74,15 @@ public class MapActivity extends AppCompatActivity {
             }
             return false;
         });
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+
+        myMap = googleMap;
+
+        LatLng eindhoven = new LatLng(51.4398, 5.4785);
+        myMap.addMarker(new MarkerOptions().position(eindhoven).title("Eindhoven"));
+        myMap.moveCamera(CameraUpdateFactory.newLatLng(eindhoven));
     }
 }

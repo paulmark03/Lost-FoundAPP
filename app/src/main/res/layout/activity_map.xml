@@ -9,6 +9,14 @@
     tools:context=".MapActivity"
     android:background="#FFFFFF">
 
+    <!-- FrameLayout as a placeholder for the map -->
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MapActivity" />
+
     <!-- Top Bar for searching and current location -->
     <LinearLayout
         android:id="@+id/top_bar"
@@ -36,14 +44,6 @@
             android:text="Eindhoven, North Brabant" />
     </LinearLayout>
 
-    <!-- FrameLayout as a placeholder for the map -->
-    <FrameLayout
-        android:id="@+id/map_container"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="#EAF2FF" />
-
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation_view"
         android:layout_width="match_parent"
@@ -55,7 +55,7 @@
         android:layout_marginBottom="30dp"
         android:background="@drawable/button_primary"
         android:elevation="2dp"
-        app:itemIconSize="30dp"
+        app:itemIconSize="40dp"
         app:itemIconTint="@drawable/item_selector"
         app:itemRippleColor="@android:color/transparent"
         app:labelVisibilityMode="unlabeled"

@@ -50,4 +50,5 @@ dependencies {
     implementation(libs.material.vversion)
     implementation(libs.play.services.maps)
     implementation(libs.fragment)  // package for creating a fragment (bottom_sheet)
+    implementation(libs.play.services.maps.v1900)
 }
