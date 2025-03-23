@@ -19,7 +19,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapActivity extends AppCompatActivity implements OnMapReadyCallBack {
+public class MapActivity extends AppCompatActivity {
 
     private GoogleMap map;
 
@@ -35,8 +35,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallBack
             return insets;
         });
 
-        SuportMapFragment mapFragment = (SuportMapFragment) getSuportFragmentManager()
-                .findFragmentById(R.id.map_container);
 
         ImageButton searchButton = findViewById(R.id.search_location_button);
         TextView currentLocation = findViewById(R.id.current_location);

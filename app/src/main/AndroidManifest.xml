@@ -19,14 +19,14 @@
             android:name=".MessagesActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".MapActivity"
             android:exported="false" />
         <activity
             android:name=".SearchActivity"
             android:exported="false" />
         <activity android:name=".RegisterActivity" />
         <activity
-            android:name=".MapActivity"
+            android:name=".LoginActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
