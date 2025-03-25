@@ -9,13 +9,44 @@
     tools:context=".MessagesActivity"
     android:background="#FFFFFF">
 
-    <TextView
-        android:layout_width="wrap_content"
+    <RelativeLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Messages"
-        android:textSize="36dp"
-        android:textColor="@color/blue"
-        android:layout_centerInParent="true"/>
+        android:minHeight="60dp"
+        android:padding="20dp"
+        android:background="@color/blue">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Messages"
+            android:textSize="35dp"
+            android:textStyle="bold"
+            android:textColorHint="@color/white"
+            android:layout_marginStart="10dp"
+            android:layout_centerVertical="false"/>
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/search_icon"
+            android:background="@color/blue"
+            android:layout_alignParentEnd="true"
+            app:tint="@color/white" />
+    </RelativeLayout>
+
+    <!-- Message item list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/messageRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottom_navigation_view"
+        android:layout_below="@id/top_bar"
+        app:layout_constraintTop_toBottomOf="parent"
+        android:padding="10dp"
+        android:clipToPadding="false"
+        android:scrollbars="vertical"/>
 
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
