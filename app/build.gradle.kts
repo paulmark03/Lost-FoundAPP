@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.firebase.auth)
     implementation(libs.play.services.maps)
+    implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -51,4 +52,8 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.fragment)  // package for creating a fragment (bottom_sheet)
     implementation(libs.play.services.maps.v1900)
+    // Glide for loading images
+    implementation(libs.glide)
+    annotationProcessor(libs.compiler)
+
 }

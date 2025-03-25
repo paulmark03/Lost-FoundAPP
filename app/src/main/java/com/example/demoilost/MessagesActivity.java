@@ -39,7 +39,7 @@ public class MessagesActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.bottom_settings) {
-                startActivity(new Intent(MessagesActivity.this, SearchActivity.class));
+                startActivity(new Intent(MessagesActivity.this, SettingsActivity.class));
                 overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
                 finish();
                 return true;
