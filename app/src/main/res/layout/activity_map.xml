@@ -21,15 +21,26 @@
     <LinearLayout
         android:id="@+id/top_bar"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="80dp"
         android:padding="16dp"
         android:orientation="horizontal"
         android:background="#F8F9FE">
 
         <ImageButton
+            android:id="@+id/post_button"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/button_primary"
+            android:src="@drawable/post_icon"
+            android:layout_marginStart="30dp"
+            android:layout_marginEnd="30dp"
+            app:layout_constraintBottom_toTopOf="@id/bottom_navigation_view" />
+
+        <ImageButton
             android:id="@+id/search_location_button"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:background="@color/grey"
             android:src="@drawable/search_icon"
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
@@ -43,6 +54,7 @@
             android:layout_marginLeft="30dp"
             android:text="Eindhoven, North Brabant" />
     </LinearLayout>
+
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation_view"

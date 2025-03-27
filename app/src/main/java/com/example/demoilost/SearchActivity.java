@@ -4,16 +4,30 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.demoilost.adapter.PostAdapter;
+import com.example.demoilost.model.PostModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
+
+    private RecyclerView postsRecyclerView;
+    private PostAdapter postAdapter;
+    private List<PostModel> postList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +66,28 @@ public class SearchActivity extends AppCompatActivity {
             }
             return false;
         });
+
+        postsRecyclerView = findViewById(R.id.postsRecyclerView);
+        postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        postList = new ArrayList<>();
+        postAdapter = new PostAdapter(this, postList);
+        postsRecyclerView.setAdapter(postAdapter);
+
+        // Fetch data from Firestore
+        FirebaseFirestore.getInstance().collection("posts")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        PostModel post = doc.toObject(PostModel.class);
+                        postList.add(post);
+                    }
+                    // Notify adapter that the data changed
+                    postAdapter.notifyDataSetChanged();
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(SearchActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
 
     }
 }

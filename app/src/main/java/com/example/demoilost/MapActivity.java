@@ -1,6 +1,7 @@
 package com.example.demoilost;
 
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -42,9 +43,15 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         mapFragment.getMapAsync(this);
 
         ImageButton searchButton = findViewById(R.id.search_location_button);
+        ImageButton postButton = findViewById(R.id.post_button);
         TextView currentLocation = findViewById(R.id.current_location);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
         bottomNavigationView.setSelectedItemId(R.id.bottom_map);
+
+        postButton.setOnClickListener(v ->{
+            Intent intent = new Intent(MapActivity.this, PostActivity.class);
+            startActivity(intent);
+        });
 
         searchButton.setOnClickListener(v -> {
             Intent intent = new Intent(MapActivity.this, SearchActivity.class);

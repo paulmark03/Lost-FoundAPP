@@ -63,37 +63,37 @@ public class MessagesActivity extends AppCompatActivity {
 
         // ----------------------------CHAT---------------------------
 
-        String currentUserId = auth.getCurrentUser().getUid();
-        String otherUserId = getIntent().getStringExtra("otherUserId");
-        String chatId = currentUserId.compareTo(otherUserId) < 0 ?
-                currentUserId + "_" + otherUserId : otherUserId + "_" + currentUserId;
-
-        private List<ChatMessage> messageList;
-        private RecyclerView recyclerView;
-        private MessageAdapter adapter;
-
-        recyclerView = findViewById(R.id.messageRecyclerView);
-        messageList = new ArrayList<>();
-        adapter = new MessageAdapter(messageList, currentUserId); // you'll create this adapter
-        recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        db.collection("chats")
-                .document(chatId)
-                .collection("messages")
-                .orderBy("timestamp")
-                .addSnapshotListener((value, error) -> {
-                    if (error != null || value == null) return;
-
-                    for (DocumentChange change : value.getDocumentChanges()) {
-                        if (change.getType() == DocumentChange.Type.ADDED) {
-                            ChatMessage message = change.getDocument().toObject(ChatMessage.class);
-                            messageList.add(message);
-                            adapter.notifyItemInserted(messageList.size() - 1);
-                            recyclerView.scrollToPosition(messageList.size() - 1);
-                        }
-                    }
-                });
+//        String currentUserId = auth.getCurrentUser().getUid();
+//        String otherUserId = getIntent().getStringExtra("otherUserId");
+//        String chatId = currentUserId.compareTo(otherUserId) < 0 ?
+//                currentUserId + "_" + otherUserId : otherUserId + "_" + currentUserId;
+//
+//        private List<ChatMessage> messageList;
+//        private RecyclerView recyclerView;
+//        private MessageAdapter adapter;
+//
+//        recyclerView = findViewById(R.id.messageRecyclerView);
+//        messageList = new ArrayList<>();
+//        adapter = new MessageAdapter(messageList, currentUserId); // you'll create this adapter
+//        recyclerView.setAdapter(adapter);
+//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+//
+//        db.collection("chats")
+//                .document(chatId)
+//                .collection("messages")
+//                .orderBy("timestamp")
+//                .addSnapshotListener((value, error) -> {
+//                    if (error != null || value == null) return;
+//
+//                    for (DocumentChange change : value.getDocumentChanges()) {
+//                        if (change.getType() == DocumentChange.Type.ADDED) {
+//                            ChatMessage message = change.getDocument().toObject(ChatMessage.class);
+//                            messageList.add(message);
+//                            adapter.notifyItemInserted(messageList.size() - 1);
+//                            recyclerView.scrollToPosition(messageList.size() - 1);
+//                        }
+//                    }
+//                });
 
 
 
