@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -17,9 +18,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.firebase.firestore.Blob;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -76,8 +80,11 @@ public class PostActivity extends AppCompatActivity {
             try {
                 InputStream inputStream = getContentResolver().openInputStream(selectedPhotoUri);
                 byte[] imageBytes = getBytes(inputStream);
+
+                Log.d("UploadImage", "Image bytes length: " + imageBytes.length);
+
                 // Convert byte[] to Firestore Blob
-                com.google.firebase.firestore.Blob imageBlob = com.google.firebase.firestore.Blob.fromBytes(imageBytes);
+                Blob imageBlob = Blob.fromBytes(imageBytes);
                 createPost(imageBlob);
             } catch (IOException e) {
                 Toast.makeText(this, "Error reading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -99,7 +106,7 @@ public class PostActivity extends AppCompatActivity {
     }
 
     // Create a new Firestore document with the post data
-    private void createPost(com.google.firebase.firestore.Blob imageBlob) {
+    private void createPost(Blob imageBlob) {
         String description = descriptionEditText.getText().toString().trim();
         String name = nameEditText.getText().toString().trim();
         String location = locationEditText.getText().toString().trim();
@@ -110,7 +117,7 @@ public class PostActivity extends AppCompatActivity {
         post.put("description", description);
         post.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
         if (imageBlob != null) {
-            post.put("image", imageBlob);
+            post.put("imageBlob", imageBlob);
         }
 
         com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("posts")
