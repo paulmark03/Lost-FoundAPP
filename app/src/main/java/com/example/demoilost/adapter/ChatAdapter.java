@@ -3,22 +3,27 @@ package com.example.demoilost.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.demoilost.R;
 import com.example.demoilost.model.Message;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
     private List<Message> messages;
+    private String currentUserId;
 
     public ChatAdapter(List<Message> messages) {
         this.messages = messages;
+        this.currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
     @NonNull
@@ -32,8 +37,30 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     @Override
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         Message message = messages.get(position);
-        holder.messageTextView.setText(message.getText());
-        // You can add additional formatting here, e.g. check sender id to style the message differently.
+        boolean isMine = message.getSenderId().equals(currentUserId);
+
+        // Handle visibility and content
+        if ("image".equals(message.getMessageType())) {
+            holder.textView.setVisibility(View.GONE);
+            holder.imageView.setVisibility(View.VISIBLE);
+            Glide.with(holder.imageView.getContext())
+                    .load(message.getImageUrl())
+                    .placeholder(R.drawable.ic_image_placeholder)
+                    .into(holder.imageView);
+        } else {
+            holder.textView.setVisibility(View.VISIBLE);
+            holder.imageView.setVisibility(View.GONE);
+            holder.textView.setText(message.getText());
+        }
+
+        // Align message bubble (basic handling via background)
+        if (isMine) {
+            holder.messageContainer.setBackgroundResource(R.drawable.bg_message_sent);
+            holder.messageContainer.setLayoutDirection(View.LAYOUT_DIRECTION_RTL); // align right
+        } else {
+            holder.messageContainer.setBackgroundResource(R.drawable.bg_message_received);
+            holder.messageContainer.setLayoutDirection(View.LAYOUT_DIRECTION_LTR); // align left
+        }
     }
 
     @Override
@@ -42,15 +69,18 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     }
 
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
-        TextView messageTextView;
+        TextView textView;
+        ImageView imageView;
+        View messageContainer;
 
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);
-            messageTextView = itemView.findViewById(R.id.messageTextView);
+            textView = itemView.findViewById(R.id.messageTextView);
+            imageView = itemView.findViewById(R.id.messageImageView);
+            messageContainer = itemView.findViewById(R.id.messageContainer);
         }
     }
 
-    // Optionally, add a method to update messages
     public void updateMessages(List<Message> newMessages) {
         this.messages = newMessages;
         notifyDataSetChanged();

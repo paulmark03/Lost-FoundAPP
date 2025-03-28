@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <!-- Title Bar -->
     <TextView
@@ -22,6 +23,18 @@
         android:layout_marginTop="60dp"
         android:layout_marginBottom="70dp"
         android:padding="8dp"/>
+
+    <!-- Image Picker Button -->
+    <ImageButton
+        android:id="@+id/imageButton"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_marginEnd="6dp"
+        android:background="@null"
+        android:src="@drawable/ic_image"
+        android:contentDescription="Image"
+        app:tint="@color/black" />
+
 
     <!-- Message input field -->
     <EditText

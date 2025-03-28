@@ -4,39 +4,35 @@ import java.util.Date;
 
 public class Message {
     private String senderId;
-    private String text;
+    private String text;           // Optional (for text messages)
+    private String imageUrl;       // Optional (for image messages)
+    private String messageType;    // "text", "image"
     private Date timestamp;
 
-    // Empty constructor required for Firestore
+    // Required for Firestore
     public Message() {}
 
-    public Message(String senderId, String text, Date timestamp) {
+    public Message(String senderId, String text, String imageUrl, String messageType, Date timestamp) {
         this.senderId = senderId;
         this.text = text;
+        this.imageUrl = imageUrl;
+        this.messageType = messageType;
         this.timestamp = timestamp;
     }
 
-    public String getSenderId() {
-        return senderId;
-    }
+    // Getters and setters
+    public String getSenderId() { return senderId; }
+    public void setSenderId(String senderId) { this.senderId = senderId; }
 
-    public void setSenderId(String senderId) {
-        this.senderId = senderId;
-    }
+    public String getText() { return text; }
+    public void setText(String text) { this.text = text; }
 
-    public String getText() {
-        return text;
-    }
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
-    public void setText(String text) {
-        this.text = text;
-    }
+    public String getMessageType() { return messageType; }
+    public void setMessageType(String messageType) { this.messageType = messageType; }
 
-    public Date getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
-    }
+    public Date getTimestamp() { return timestamp; }
+    public void setTimestamp(Date timestamp) { this.timestamp = timestamp; }
 }
