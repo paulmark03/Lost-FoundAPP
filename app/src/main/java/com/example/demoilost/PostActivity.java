@@ -4,35 +4,45 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.google.firebase.firestore.Blob;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.InputStream;
-import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.IOException;
+
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class PostActivity extends AppCompatActivity {
+
     private static final int SELECT_PHOTO_REQUEST = 100;
     private ImageView photoImageView;
     private Button selectPhotoButton, postButton;
     private EditText descriptionEditText, nameEditText, locationEditText;
     private Uri selectedPhotoUri;
+    private String uploadedImageUrl = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,25 +56,21 @@ public class PostActivity extends AppCompatActivity {
         nameEditText = findViewById(R.id.nameEditText);
         locationEditText = findViewById(R.id.locationEditText);
 
-        selectPhotoButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Launch intent to pick an image from the gallery
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                intent.setType("image/*");
-                startActivityForResult(intent, SELECT_PHOTO_REQUEST);
-            }
+        selectPhotoButton.setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            startActivityForResult(intent, SELECT_PHOTO_REQUEST);
         });
 
-        postButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                uploadImageAndPost();
+        postButton.setOnClickListener(v -> {
+            if (selectedPhotoUri != null) {
+                uploadImageToImgur(selectedPhotoUri);
+            } else {
+                createPost(null); // No image selected
             }
         });
     }
 
-    // Handle image selection result
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -74,60 +80,77 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
-    // Convert selected image to a byte array and create the Firestore post
-    private void uploadImageAndPost() {
-        if (selectedPhotoUri != null) {
-            try {
-                InputStream inputStream = getContentResolver().openInputStream(selectedPhotoUri);
-                byte[] imageBytes = getBytes(inputStream);
+    private void uploadImageToImgur(Uri imageUri) {
+        try {
+            InputStream inputStream = getContentResolver().openInputStream(imageUri);
+            byte[] imageBytes = IOUtils.toByteArray(inputStream);
+            String base64Image = Base64.encodeToString(imageBytes, Base64.DEFAULT);
 
-                Log.d("UploadImage", "Image bytes length: " + imageBytes.length);
+            OkHttpClient client = new OkHttpClient();
 
-                // Convert byte[] to Firestore Blob
-                Blob imageBlob = Blob.fromBytes(imageBytes);
-                createPost(imageBlob);
-            } catch (IOException e) {
-                Toast.makeText(this, "Error reading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            createPost(null);
+            RequestBody body = new FormBody.Builder()
+                    .add("image", base64Image)
+                    .build();
+
+            Request request = new Request.Builder()
+                    .url("https://api.imgur.com/3/image")
+                    .header("Authorization", "Client-ID ad8d936a2f446c7") // Replace with real Client ID
+                    .post(body)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    runOnUiThread(() -> Toast.makeText(PostActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        String json = response.body().string();
+                        try {
+                            JSONObject jsonObject = new JSONObject(json);
+                            uploadedImageUrl = jsonObject.getJSONObject("data").getString("link");
+                            runOnUiThread(() -> createPost(uploadedImageUrl));
+                        } catch (JSONException e) {
+                            runOnUiThread(() -> Toast.makeText(PostActivity.this, "Error parsing image URL", Toast.LENGTH_SHORT).show());
+                        }
+                    } else {
+                        runOnUiThread(() -> Toast.makeText(PostActivity.this, "Imgur upload failed", Toast.LENGTH_SHORT).show());
+                    }
+                }
+            });
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Failed to read image", Toast.LENGTH_SHORT).show();
         }
     }
 
-    // Helper to convert InputStream to byte[]
-    private byte[] getBytes(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead;
-        byte[] data = new byte[1024];
-        while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
-        }
-        return buffer.toByteArray();
-    }
-
-    // Create a new Firestore document with the post data
-    private void createPost(Blob imageBlob) {
+    private void createPost(String imageUrl) {
         String description = descriptionEditText.getText().toString().trim();
-        String name = nameEditText.getText().toString().trim();
+        String title = nameEditText.getText().toString().trim();
         String location = locationEditText.getText().toString().trim();
 
+        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         Map<String, Object> post = new HashMap<>();
-        post.put("name", name);
+        post.put("title", title);
         post.put("location", location);
         post.put("description", description);
+        post.put("posterId", uid);
         post.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
-        if (imageBlob != null) {
-            post.put("imageBlob", imageBlob);
+        if (imageUrl != null) {
+            post.put("imageUrl", imageUrl);
         }
 
-        com.google.firebase.firestore.FirebaseFirestore.getInstance().collection("posts")
+        FirebaseFirestore.getInstance().collection("posts")
                 .add(post)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(PostActivity.this, "Post added", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PostActivity.this, "Post created!", Toast.LENGTH_SHORT).show();
                     finish();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(PostActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                        Toast.makeText(PostActivity.this, "Post failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

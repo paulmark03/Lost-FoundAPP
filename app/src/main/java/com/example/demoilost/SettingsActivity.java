@@ -76,7 +76,7 @@ public class SettingsActivity extends AppCompatActivity {
         username = findViewById(R.id.username);
         profileIcon = findViewById(R.id.profileIcon);
 
-        loadUserProfile(); // 🔥 Load user info from Firebase
+        loadUserProfile(); //  Load user info from Firebase
 
         // Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
@@ -197,7 +197,7 @@ public class SettingsActivity extends AppCompatActivity {
                             JSONObject jsonObject = new JSONObject(json);
                             String imageUrl = jsonObject.getJSONObject("data").getString("link");
 
-                            runOnUiThread(() -> updateAuthProfilePicture(imageUrl)); // ✅ Upload to Firebase Auth
+                            runOnUiThread(() -> updateAuthProfilePicture(imageUrl)); //Upload to Firebase Auth
                         } catch (JSONException e) {
                             runOnUiThread(() ->
                                     Toast.makeText(SettingsActivity.this, "Failed to parse Imgur response", Toast.LENGTH_SHORT).show());

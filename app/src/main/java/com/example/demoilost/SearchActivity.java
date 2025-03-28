@@ -78,16 +78,18 @@ public class SearchActivity extends AppCompatActivity {
         FirebaseFirestore.getInstance().collection("posts")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    postList.clear();
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         PostModel post = doc.toObject(PostModel.class);
+                        post.setPostId(doc.getId());  //  Set postId manually!
                         postList.add(post);
                     }
-                    // Notify adapter that the data changed
                     postAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(SearchActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
+
 
     }
 }

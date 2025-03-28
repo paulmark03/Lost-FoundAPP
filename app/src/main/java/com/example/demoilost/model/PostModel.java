@@ -4,46 +4,41 @@ import com.google.firebase.firestore.Blob;
 import com.google.firebase.firestore.PropertyName;
 
 public class PostModel {
-    private String name;
+    private String postId;
+    private String posterId;
+    private String imageUrl;
+    private String title;
     private String location;
     private String description;
 
-    // Map the Firestore field "image" to this property
-    @PropertyName("image")
-    private Blob imageBlob;
+    public PostModel() {} // Required by Firestore
 
-    // Empty constructor required by Firestore
-    public PostModel() {}
-
-    // Getters and setters for name, location, description...
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-    public void setLocation(String location) {
+    public PostModel(String postId, String posterId, String imageUrl, String title, String location, String description) {
+        this.postId = postId;
+        this.posterId = posterId;
+        this.imageUrl = imageUrl;
+        this.title = title;
         this.location = location;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-    public void setDescription(String description) {
         this.description = description;
     }
 
-    // Use the @PropertyName annotation on the getter and setter
-    @PropertyName("image")
-    public Blob getImageBlob() {
-        return imageBlob;
-    }
-    @PropertyName("image")
-    public void setImageBlob(Blob imageBlob) {
-        this.imageBlob = imageBlob;
-    }
+    // Getters and setters
+    public String getPostId() { return postId; }
+    public void setPostId(String postId) { this.postId = postId; }
+
+    public String getPosterId() { return posterId; }
+    public void setPosterId(String posterId) { this.posterId = posterId; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 }
+
