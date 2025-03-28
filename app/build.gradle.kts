@@ -55,5 +55,8 @@ dependencies {
     // Glide for loading images
     implementation(libs.glide)
     annotationProcessor(libs.compiler)
+    implementation (libs.okhttp)
+    implementation (libs.commons.io)
+
 
 }
