@@ -15,10 +15,17 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.api.Status;
+import com.google.android.libraries.places.widget.AutocompleteActivity;
+
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -29,6 +36,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +60,7 @@ public class PostActivity extends AppCompatActivity {
     private EditText descriptionEditText, nameEditText, locationEditText;
     private Uri selectedPhotoUri, cameraPhotoUri;
     private String uploadedImageUrl = null;
+    private GeoPoint geoPointFromSearch = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,9 +93,25 @@ public class PostActivity extends AppCompatActivity {
         });
 
         if (!Places.isInitialized()) {
-            Places.initialize(getApplicationContext(), "YOUR_API_KEY_HERE");
+            Places.initialize(getApplicationContext(), "AIzaSyAxay_dovw88a_M3TvSTbL2q_YPbOCYlJA");
         }
+
+        locationEditText.setOnClickListener(v -> openAutocomplete());
+
     }
+
+    private void openAutocomplete() {
+        List<Place.Field> fields = Arrays.asList(
+                Place.Field.ID,
+                Place.Field.ADDRESS,
+                Place.Field.LAT_LNG
+        );
+
+        Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                .build(this);
+        startActivityForResult(intent, 1001);
+    }
+
 
     private void openCameraIntent() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
@@ -118,6 +143,21 @@ public class PostActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1001) {
+            if (resultCode == RESULT_OK) {
+                Place place = Autocomplete.getPlaceFromIntent(data);
+                locationEditText.setText(place.getAddress());
+                geoPointFromSearch = new GeoPoint(
+                        place.getLatLng().latitude,
+                        place.getLatLng().longitude
+                );
+            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
+                Status status = Autocomplete.getStatusFromIntent(data);
+                Toast.makeText(this, "Error: " + status.getStatusMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             if (cameraPhotoUri != null) {
                 selectedPhotoUri = cameraPhotoUri;
@@ -183,20 +223,9 @@ public class PostActivity extends AppCompatActivity {
         String title = nameEditText.getText().toString().trim();
         String location = locationEditText.getText().toString().trim();
 
-        GeoPoint geoPoint = null;
-        Geocoder geocoder = new Geocoder(this);
-        try {
-            List<Address> addressList = geocoder.getFromLocationName(location, 1);
-            if (!addressList.isEmpty()) {
-                Address address = addressList.get(0);
-                geoPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
-            } else {
-                Toast.makeText(this, "Location not found", Toast.LENGTH_SHORT).show();
-                return;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Geocoding failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        GeoPoint geoPoint = geoPointFromSearch;
+        if (geoPoint == null) {
+            Toast.makeText(this, "Please select a location", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -206,6 +235,7 @@ public class PostActivity extends AppCompatActivity {
         Map<String, Object> post = new HashMap<>();
         post.put("title", title);
         post.put("location", geoPoint);
+        post.put("address", locationEditText.getText().toString());
         post.put("description", description);
         post.put("posterId", uid);
         post.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());

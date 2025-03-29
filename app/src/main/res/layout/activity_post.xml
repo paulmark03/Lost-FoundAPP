@@ -79,6 +79,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Location"
+        android:focusable="false"
         android:background="@drawable/rounded_edittext"
         app:layout_constraintTop_toBottomOf="@id/nameEditText"
         app:layout_constraintStart_toStartOf="parent"

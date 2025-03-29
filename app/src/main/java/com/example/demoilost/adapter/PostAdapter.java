@@ -43,11 +43,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         // Bind text fields
         holder.titleTextView.setText(post.getTitle());
-        if (geo != null) {
-            holder.locationTextView.setText(geo.getLatitude() + ", " + geo.getLongitude());
-        } else {
-            holder.locationTextView.setText("Unknown location");
-        }
+        holder.locationTextView.setText(post.getAddress());
         holder.descriptionTextView.setText(post.getDescription());
 
         // Load image using Glide

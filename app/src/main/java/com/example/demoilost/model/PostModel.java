@@ -11,6 +11,7 @@ public class PostModel {
     private String title;
     private GeoPoint location;
     private String description;
+    private String address;
 
 
 
@@ -44,5 +45,9 @@ public class PostModel {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getAddress() {return address;}
+
+    public void setAddress(String address) {this.address = address;}
 }
 
