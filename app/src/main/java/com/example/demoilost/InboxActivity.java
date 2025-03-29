@@ -49,7 +49,7 @@ public class InboxActivity extends AppCompatActivity {
 
         //migrateChatDocuments();
 
-        //fixChatsFromSenderId();
+        fixChatsFromSenderId();
 
         messageRecyclerView = findViewById(R.id.messageRecyclerView);
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -229,40 +229,40 @@ public class InboxActivity extends AppCompatActivity {
 //                );
 //    }
 
-//    private void fixChatsFromSenderId() {
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//
-//        db.collection("chats")
-//                .get()
-//                .addOnSuccessListener(querySnapshots -> {
-//                    for (DocumentSnapshot doc : querySnapshots) {
-//                        String docId = doc.getId();
-//                        String senderId = doc.getString("senderId");
-//                        String postId = doc.getString("postId");
-//
-//                        if (senderId != null && postId != null) {
-//                            // Get post to find out who the founder is
-//                            db.collection("posts")
-//                                    .document(postId)
-//                                    .get()
-//                                    .addOnSuccessListener(postSnapshot -> {
-//                                        String founderId = postSnapshot.getString("posterId"); // or "userId" depending on schema
-//                                        if (founderId != null) {
-//                                            Map<String, Object> updates = new HashMap<>();
-//                                            updates.put("userId", senderId);
-//                                            updates.put("founderId", founderId);
-//                                            updates.put("chatId", docId);
-//                                            updates.put("participants", Arrays.asList(senderId, founderId));
-//
-//                                            db.collection("chats")
-//                                                    .document(docId)
-//                                                    .set(updates, SetOptions.merge());
-//                                        }
-//                                    });
-//                        }
-//                    }
-//                });
-//    }
+    private void fixChatsFromSenderId() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("chats")
+                .get()
+                .addOnSuccessListener(querySnapshots -> {
+                    for (DocumentSnapshot doc : querySnapshots) {
+                        String docId = doc.getId();
+                        String senderId = doc.getString("senderId");
+                        String postId = doc.getString("postId");
+
+                        if (senderId != null && postId != null) {
+                            // Get post to find out who the founder is
+                            db.collection("posts")
+                                    .document(postId)
+                                    .get()
+                                    .addOnSuccessListener(postSnapshot -> {
+                                        String founderId = postSnapshot.getString("posterId"); // or "userId" depending on schema
+                                        if (founderId != null) {
+                                            Map<String, Object> updates = new HashMap<>();
+                                            updates.put("userId", senderId);
+                                            updates.put("founderId", founderId);
+                                            updates.put("chatId", docId);
+                                            updates.put("participants", Arrays.asList(senderId, founderId));
+
+                                            db.collection("chats")
+                                                    .document(docId)
+                                                    .set(updates, SetOptions.merge());
+                                        }
+                                    });
+                        }
+                    }
+                });
+    }
 
 
 }

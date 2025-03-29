@@ -12,9 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.demoilost.PostDetailActivity;
 import com.example.demoilost.R;
 import com.example.demoilost.model.PostModel;
-import com.example.demoilost.PostDetailActivity;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.List;
@@ -39,14 +39,12 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         PostModel post = postList.get(position);
-        GeoPoint geo = post.getLocation();
 
-        // Bind text fields
-        holder.titleTextView.setText(post.getTitle());
-        holder.locationTextView.setText(post.getAddress());
-        holder.descriptionTextView.setText(post.getDescription());
+        holder.titleTextView.setText(post.getTitle() != null ? post.getTitle() : "Untitled");
+        holder.locationTextView.setText(post.getAddress() != null ? post.getAddress() : "Unknown Location");
+        holder.descriptionTextView.setText(post.getDescription() != null ? post.getDescription() : "No description");
 
-        // Load image using Glide
+        // Load image
         if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(post.getImageUrl())
@@ -56,21 +54,25 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             holder.postImageView.setImageResource(R.drawable.ic_profile);
         }
 
-        // On click → open PostDetailActivity with full data
+        // Open PostDetailActivity
         holder.itemView.setOnClickListener(v -> {
-            GeoPoint geoP = post.getLocation();
-
             Intent intent = new Intent(context, PostDetailActivity.class);
             intent.putExtra("title", post.getTitle());
-            if (geoP != null) {
-                intent.putExtra("latitude", geo.getLatitude());
-                intent.putExtra("longitude", geo.getLongitude());
-            }
             intent.putExtra("address", post.getAddress());
             intent.putExtra("description", post.getDescription());
             intent.putExtra("imageUrl", post.getImageUrl());
-            intent.putExtra("postId", post.getPostId());
-            intent.putExtra("founderId", post.getPosterId());
+
+            // Ensure geo is passed only if available
+            GeoPoint geo = post.getLocation();
+            if (geo != null) {
+                intent.putExtra("latitude", geo.getLatitude());
+                intent.putExtra("longitude", geo.getLongitude());
+            }
+
+            // 🔥 Pass critical values
+            intent.putExtra("postId", post.getPostId() != null ? post.getPostId() : "");
+            intent.putExtra("founderId", post.getPosterId() != null ? post.getPosterId() : "");
+
             context.startActivity(intent);
         });
     }
