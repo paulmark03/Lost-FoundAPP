@@ -210,10 +210,16 @@ public class ChatActivity extends AppCompatActivity {
                 .document(chatId)
                 .collection("messages")
                 .add(message)
+                .addOnSuccessListener(documentReference -> {
+                    // Message sent successfully
+                    Toast.makeText(this, "Message sent", Toast.LENGTH_SHORT).show();
+                    chatRecyclerView.scrollToPosition(messagesList.size() - 1);
+                })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Failed to send message: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
     }
+
 
     private void uploadImageToImgur(Uri imageUri) {
         try {
@@ -229,7 +235,7 @@ public class ChatActivity extends AppCompatActivity {
 
             Request request = new Request.Builder()
                     .url("https://api.imgur.com/3/image")
-                    .header("Authorization", "Client-ID YOUR_CLIENT_ID") // Replace this!
+                    .header("Authorization", "Client-ID ad8d936a2f446c7")
                     .post(body)
                     .build();
 
