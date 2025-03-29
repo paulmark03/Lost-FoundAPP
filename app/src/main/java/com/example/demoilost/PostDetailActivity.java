@@ -48,6 +48,10 @@ public class PostDetailActivity extends AppCompatActivity {
             chatButton.setVisibility(View.GONE);
         }
 
+        ImageView backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+
+
 
     }
 

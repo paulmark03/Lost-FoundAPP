@@ -7,17 +7,31 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Placeholder for the photo -->
+    <!-- Back Button -->
+    <ImageView
+        android:id="@+id/backButton"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="8dp"
+        android:src="@drawable/ic_back"
+        android:contentDescription="Back"
+        app:tint="@color/black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Photo Placeholder -->
     <ImageView
         android:id="@+id/photoImageView"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:scaleType="centerCrop"
         android:background="@drawable/rounded_edittext"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/backButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- Photo Buttons -->
     <LinearLayout
         android:id="@+id/buttons_photo"
         android:layout_width="match_parent"
@@ -44,11 +58,9 @@
             android:layout_weight="1"
             android:layout_marginStart="8dp"
             android:text="Add Photo" />
-
     </LinearLayout>
 
-
-    <!-- EditText for name input -->
+    <!-- Name -->
     <EditText
         android:id="@+id/nameEditText"
         android:layout_width="match_parent"
@@ -61,7 +73,7 @@
         android:layout_marginTop="8dp"
         android:padding="12dp" />
 
-    <!-- EditText for location input -->
+    <!-- Location -->
     <EditText
         android:id="@+id/locationEditText"
         android:layout_width="match_parent"
@@ -74,7 +86,7 @@
         android:layout_marginTop="8dp"
         android:padding="12dp" />
 
-    <!-- EditText for description input -->
+    <!-- Description -->
     <EditText
         android:id="@+id/descriptionEditText"
         android:layout_width="match_parent"
@@ -87,7 +99,7 @@
         android:layout_marginTop="8dp"
         android:padding="12dp" />
 
-    <!-- Post button to submit the content -->
+    <!-- Post Button -->
     <Button
         android:id="@+id/postButton"
         android:layout_width="wrap_content"

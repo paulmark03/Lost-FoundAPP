@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -85,6 +86,10 @@ public class ChatActivity extends AppCompatActivity {
 
         chatId = getIntent().getStringExtra("chatId");
         founderId = getIntent().getStringExtra("founderId");
+
+        ImageView backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+
 
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 

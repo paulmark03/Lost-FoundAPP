@@ -22,6 +22,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+
+
 public class InboxActivity extends AppCompatActivity {
 
     private RecyclerView messageRecyclerView;
@@ -37,7 +49,7 @@ public class InboxActivity extends AppCompatActivity {
 
         //migrateChatDocuments();
 
-        fixChatsFromSenderId();
+        //fixChatsFromSenderId();
 
         messageRecyclerView = findViewById(R.id.messageRecyclerView);
         messageRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -69,6 +81,68 @@ public class InboxActivity extends AppCompatActivity {
             finish();
             return true;
         });
+
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false; // we don't want drag-n-drop
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                ChatPreviewModel chat = chatList.get(position);
+
+                String chatId = chat.getChatId();
+
+                // Delete chat document
+                FirebaseFirestore.getInstance().collection("chats").document(chatId)
+                        .delete()
+                        .addOnSuccessListener(unused -> {
+                            // Also delete messages subcollection
+                            FirebaseFirestore.getInstance().collection("chats")
+                                    .document(chatId).collection("messages")
+                                    .get()
+                                    .addOnSuccessListener(query -> {
+                                        for (DocumentSnapshot doc : query.getDocuments()) {
+                                            doc.getReference().delete();
+                                        }
+                                    });
+                            chatList.remove(position);
+                            adapter.notifyItemRemoved(position);
+                            Toast.makeText(InboxActivity.this, "Chat deleted", Toast.LENGTH_SHORT).show();
+                        })
+                        .addOnFailureListener(e ->
+                                Toast.makeText(InboxActivity.this, "Failed to delete chat: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                // Red background with trash icon
+                View itemView = viewHolder.itemView;
+                Paint paint = new Paint();
+                paint.setColor(Color.RED);
+
+                RectF background = new RectF(itemView.getRight() + dX, itemView.getTop(),
+                        itemView.getRight(), itemView.getBottom());
+                c.drawRect(background, paint);
+
+                Drawable icon = ContextCompat.getDrawable(InboxActivity.this, R.drawable.ic_trash);
+                int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+                int iconTop = itemView.getTop() + iconMargin;
+                int iconLeft = itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
+                int iconRight = itemView.getRight() - iconMargin;
+                int iconBottom = iconTop + icon.getIntrinsicHeight();
+                icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
+                icon.draw(c);
+
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+
+        }).attachToRecyclerView(messageRecyclerView);
+
     }
 
     private void loadChats() {
@@ -155,40 +229,40 @@ public class InboxActivity extends AppCompatActivity {
 //                );
 //    }
 
-    private void fixChatsFromSenderId() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        db.collection("chats")
-                .get()
-                .addOnSuccessListener(querySnapshots -> {
-                    for (DocumentSnapshot doc : querySnapshots) {
-                        String docId = doc.getId();
-                        String senderId = doc.getString("senderId");
-                        String postId = doc.getString("postId");
-
-                        if (senderId != null && postId != null) {
-                            // Get post to find out who the founder is
-                            db.collection("posts")
-                                    .document(postId)
-                                    .get()
-                                    .addOnSuccessListener(postSnapshot -> {
-                                        String founderId = postSnapshot.getString("posterId"); // or "userId" depending on schema
-                                        if (founderId != null) {
-                                            Map<String, Object> updates = new HashMap<>();
-                                            updates.put("userId", senderId);
-                                            updates.put("founderId", founderId);
-                                            updates.put("chatId", docId);
-                                            updates.put("participants", Arrays.asList(senderId, founderId));
-
-                                            db.collection("chats")
-                                                    .document(docId)
-                                                    .set(updates, SetOptions.merge());
-                                        }
-                                    });
-                        }
-                    }
-                });
-    }
+//    private void fixChatsFromSenderId() {
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//
+//        db.collection("chats")
+//                .get()
+//                .addOnSuccessListener(querySnapshots -> {
+//                    for (DocumentSnapshot doc : querySnapshots) {
+//                        String docId = doc.getId();
+//                        String senderId = doc.getString("senderId");
+//                        String postId = doc.getString("postId");
+//
+//                        if (senderId != null && postId != null) {
+//                            // Get post to find out who the founder is
+//                            db.collection("posts")
+//                                    .document(postId)
+//                                    .get()
+//                                    .addOnSuccessListener(postSnapshot -> {
+//                                        String founderId = postSnapshot.getString("posterId"); // or "userId" depending on schema
+//                                        if (founderId != null) {
+//                                            Map<String, Object> updates = new HashMap<>();
+//                                            updates.put("userId", senderId);
+//                                            updates.put("founderId", founderId);
+//                                            updates.put("chatId", docId);
+//                                            updates.put("participants", Arrays.asList(senderId, founderId));
+//
+//                                            db.collection("chats")
+//                                                    .document(docId)
+//                                                    .set(updates, SetOptions.merge());
+//                                        }
+//                                    });
+//                        }
+//                    }
+//                });
+//    }
 
 
 }

@@ -58,6 +58,10 @@ public class PostActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
 
+        ImageView backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+
+
         photoImageView = findViewById(R.id.photoImageView);
         selectPhotoButton = findViewById(R.id.selectPhotoButton);
         postButton = findViewById(R.id.postButton);
