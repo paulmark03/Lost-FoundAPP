@@ -101,13 +101,22 @@
         android:layout_marginBottom="16dp">
 
         <!-- Reusable Setting Row -->
-        <include layout="@layout/setting_row" />
-        <include layout="@layout/setting_row" />
-        <include layout="@layout/setting_row" />
-        <include layout="@layout/setting_row" />
-        <include layout="@layout/setting_row" />
-        <include layout="@layout/setting_row" />
-        <include layout="@layout/setting_row" />
+        <include
+            android:id="@+id/rowMyPosts"
+            layout="@layout/setting_row" />
+
+        <include
+            android:id="@+id/rowManageAccount"
+            layout="@layout/setting_row" />
+
+        <include
+            android:id="@+id/rowPrivacy"
+            layout="@layout/setting_row" />
+
+        <include
+            android:id="@+id/rowLogout"
+            layout="@layout/setting_row" />
+
     </LinearLayout>
 
     <!-- Bottom Navigation Bar -->

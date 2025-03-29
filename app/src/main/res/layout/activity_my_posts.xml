@@ -5,14 +5,14 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     android:orientation="vertical"
     android:padding="24dp"
-    android:background="@android:color/white"
-    tools:context=".InboxActivity">
+    tools:context=".MyPostsActivity">
 
-    <!-- Top Bar -->
+    <!-- Top Bar: Back Button + Title -->
     <LinearLayout
-        android:id="@+id/top_bar"
+        android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -20,41 +20,32 @@
         android:paddingTop="40dp"
         android:paddingBottom="16dp">
 
+        <ImageView
+            android:id="@+id/backButton"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Back"
+            app:tint="#000000" />
+
         <TextView
-            android:id="@+id/messagesTitle"
-            android:layout_width="0dp"
+            android:id="@+id/topTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Messages"
+            android:text="My Posts"
+            android:layout_marginStart="16dp"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#000000" />
-
-
     </LinearLayout>
 
-    <!-- RecyclerView for messages -->
+    <!-- RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/messageRecyclerView"
+        android:id="@+id/myPostsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
         android:scrollbars="vertical"
         android:paddingBottom="16dp" />
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation_view"
-        android:layout_width="335dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="30dp"
-        android:background="@drawable/button_primary"
-        android:elevation="2dp"
-        app:itemIconSize="30dp"
-        app:itemIconTint="@drawable/item_selector"
-        app:itemRippleColor="@android:color/transparent"
-        app:labelVisibilityMode="unlabeled"
-        app:menu="@menu/bottom_menu" />
 </LinearLayout>

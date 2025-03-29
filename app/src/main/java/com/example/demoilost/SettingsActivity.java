@@ -18,6 +18,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import android.util.Base64;
 import org.apache.commons.io.IOUtils;
@@ -34,6 +35,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import android.widget.LinearLayout;
+
 
 
 
@@ -75,6 +78,43 @@ public class SettingsActivity extends AppCompatActivity {
         profileIcon = findViewById(R.id.profileIcon);
 
         loadUserProfile(); //  Load user info from Firebase
+
+        // Settings Row Setup
+        TextView rowMyPosts = findViewById(R.id.rowMyPosts).findViewById(R.id.settingLabel);
+        TextView rowManageAccount = findViewById(R.id.rowManageAccount).findViewById(R.id.settingLabel);
+        TextView rowPrivacy = findViewById(R.id.rowPrivacy).findViewById(R.id.settingLabel);
+        TextView rowLogout = findViewById(R.id.rowLogout).findViewById(R.id.settingLabel);
+
+    // Set labels
+        rowMyPosts.setText("My Posts");
+        rowManageAccount.setText("Manage Account");
+        rowPrivacy.setText("Privacy & Security");
+        rowLogout.setText("Log Out");
+
+    // Set click actions
+        findViewById(R.id.rowMyPosts).setOnClickListener(v -> {
+            startActivity(new Intent(this, MyPostsActivity.class));
+        });
+
+        findViewById(R.id.rowManageAccount).setOnClickListener(v -> {
+            startActivity(new Intent(this, ManageAccountActivity.class));
+        });
+
+        findViewById(R.id.rowPrivacy).setOnClickListener(v -> {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("Privacy & Security")
+                    .setMessage("We respect your privacy. Your personal information, including email and name, is only used for authentication and communication between users. Uploaded images and messages are securely stored and not shared with third parties. You can delete your account at any time.\n\nFor any concerns, please contact our support team.")
+                    .setPositiveButton("OK", null)
+                    .show();
+        });
+
+
+        findViewById(R.id.rowLogout).setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(this, LoginActivity.class));
+            finish();
+        });
+
 
         // Bottom Navigation
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
@@ -121,45 +161,72 @@ public class SettingsActivity extends AppCompatActivity {
 
 
     private void loadUserProfile() {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (user != null) {
-            String name = user.getDisplayName();
-            String email = user.getEmail();
-            Uri photoUrl = user.getPhotoUrl();
-
-            profileName.setText(name != null ? name : "No Name");
-            username.setText(email != null ? "@" + email.split("@")[0] : "unknown");
-
-            if (photoUrl != null) {
-                Glide.with(this)
-                        .load(photoUrl)
-                        .placeholder(R.drawable.ic_profile)
-                        .into(profileIcon);
-            } else {
-                profileIcon.setImageResource(R.drawable.ic_profile); // fallback
-            }
-        } else {
+        if (firebaseUser == null) {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        String uid = firebaseUser.getUid();
+
+        FirebaseFirestore.getInstance().collection("users")
+                .document(uid)
+                .get()
+                .addOnSuccessListener(document -> {
+                    if (document.exists()) {
+                        String name = document.getString("name");
+                        String email = document.getString("email");
+                        String photoUrl = document.getString("photoUrl");
+
+                        profileName.setText(name != null ? name : "No Name");
+                        username.setText(email != null ? "@" + email.split("@")[0] : "unknown");
+
+                        if (photoUrl != null && !photoUrl.isEmpty()) {
+                            Glide.with(this)
+                                    .load(photoUrl)
+                                    .placeholder(R.drawable.ic_profile)
+                                    .into(profileIcon);
+                        } else {
+                            profileIcon.setImageResource(R.drawable.ic_profile);
+                        }
+                    } else {
+                        Toast.makeText(this, "Profile not found in Firestore", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error loading profile: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+
+
+
+
 
     private void updateAuthProfilePicture(String imageUrl) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {
+            // Update Firebase Auth (optional if no longer needed)
             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                     .setPhotoUri(Uri.parse(imageUrl))
                     .build();
 
-            user.updateProfile(profileUpdates)
-                    .addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+            user.updateProfile(profileUpdates);
+
+            // 🔥 Update Firestore
+            FirebaseFirestore.getInstance()
+                    .collection("users")
+                    .document(user.getUid())
+                    .update("photoUrl", imageUrl)
+                    .addOnSuccessListener(aVoid ->
+                            Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show()
+                    )
+                    .addOnFailureListener(e ->
+                            Toast.makeText(this, "Failed to update Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
         }
     }
+
 
 
     private void uploadToImgur(Uri imageUri) {
