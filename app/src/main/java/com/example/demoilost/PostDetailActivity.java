@@ -2,6 +2,8 @@ package com.example.demoilost;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import java.util.Arrays;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -15,7 +17,6 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +25,6 @@ public class PostDetailActivity extends AppCompatActivity {
     private ImageView detailImageView;
     private TextView detailTitleTextView, detailLocationTextView, detailDescriptionTextView;
     private Button chatButton;
-
     private FirebaseFirestore db;
     private String currentUserId, founderId, postId, title, location, description, imageUrl;
 
@@ -51,7 +51,7 @@ public class PostDetailActivity extends AppCompatActivity {
         chatButton = findViewById(R.id.chatButton);
     }
 
-    private void extractPostData() {
+    private void extractPostData(){
         Intent intent = getIntent();
         title = intent.getStringExtra("title");
         location = intent.getStringExtra("location");
@@ -59,13 +59,21 @@ public class PostDetailActivity extends AppCompatActivity {
         imageUrl = intent.getStringExtra("imageUrl");
         postId = intent.getStringExtra("postId");
         founderId = intent.getStringExtra("founderId");
+        double latitude = intent.getDoubleExtra("latitude", 0.0);
+        double longitude = intent.getDoubleExtra("longitude", 0.0);
+        String locationText = latitude != 0.0 || longitude != 0.0
+                ? latitude + ", " + longitude
+                : "Location not available";
     }
+
+
 
     private void populateUI() {
         detailTitleTextView.setText(title != null ? title : "Untitled");
         detailLocationTextView.setText(location != null ? location : "Unknown Location");
         detailDescriptionTextView.setText(description != null ? description : "No description");
 
+        // Load image using Glide
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this)
                     .load(imageUrl)

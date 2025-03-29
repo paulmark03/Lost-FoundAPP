@@ -1,6 +1,7 @@
 package com.example.demoilost.model;
 
 import com.google.firebase.firestore.Blob;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.PropertyName;
 
 public class PostModel {
@@ -8,7 +9,7 @@ public class PostModel {
     private String posterId;
     private String imageUrl;
     private String title;
-    private String location;
+    private GeoPoint location;
     private String description;
 
 
@@ -16,7 +17,7 @@ public class PostModel {
 
     public PostModel() {} // Required by Firestore
 
-    public PostModel(String postId, String posterId, String imageUrl, String title, String location, String description) {
+    public PostModel(String postId, String posterId, String imageUrl, String title, GeoPoint location, String description) {
         this.postId = postId;
         this.posterId = posterId;
         this.imageUrl = imageUrl;
@@ -38,8 +39,8 @@ public class PostModel {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
+    public GeoPoint getLocation() { return location; }
+    public void setLocation(GeoPoint location) { this.location = location; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }

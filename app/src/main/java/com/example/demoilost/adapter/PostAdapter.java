@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide;
 import com.example.demoilost.R;
 import com.example.demoilost.model.PostModel;
 import com.example.demoilost.PostDetailActivity;
+import com.google.firebase.firestore.GeoPoint;
 
 import java.util.List;
 
@@ -38,10 +39,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
     @Override
     public void onBindViewHolder(@NonNull PostViewHolder holder, int position) {
         PostModel post = postList.get(position);
+        GeoPoint geo = post.getLocation();
 
         // Bind text fields
         holder.titleTextView.setText(post.getTitle());
-        holder.locationTextView.setText(post.getLocation());
+        if (geo != null) {
+            holder.locationTextView.setText(geo.getLatitude() + ", " + geo.getLongitude());
+        } else {
+            holder.locationTextView.setText("Unknown location");
+        }
         holder.descriptionTextView.setText(post.getDescription());
 
         // Load image using Glide
@@ -56,9 +62,14 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
 
         // On click → open PostDetailActivity with full data
         holder.itemView.setOnClickListener(v -> {
+            GeoPoint geoP = post.getLocation();
+
             Intent intent = new Intent(context, PostDetailActivity.class);
             intent.putExtra("title", post.getTitle());
-            intent.putExtra("location", post.getLocation());
+            if (geoP != null) {
+                intent.putExtra("latitude", geo.getLatitude());
+                intent.putExtra("longitude", geo.getLongitude());
+            }
             intent.putExtra("description", post.getDescription());
             intent.putExtra("imageUrl", post.getImageUrl());
             intent.putExtra("postId", post.getPostId());

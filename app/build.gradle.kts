@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.play.services.maps.v1900)
     // Glide for loading images
     implementation(libs.glide)
+    implementation("com.google.android.libraries.places:places:4.2.0")
     annotationProcessor(libs.compiler)
     implementation (libs.okhttp)
     implementation (libs.commons.io)

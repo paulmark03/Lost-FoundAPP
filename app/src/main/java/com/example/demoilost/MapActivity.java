@@ -2,6 +2,7 @@ package com.example.demoilost;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -12,6 +13,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.example.demoilost.model.PostModel;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -19,6 +21,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -37,8 +42,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
 
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
-
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        } else {
+            Log.e("MapActivity", "mapFragment is NULL. Check activity_map.xml!");
+        }
         ImageButton searchButton = findViewById(R.id.search_location_button);
         ImageButton postButton = findViewById(R.id.post_button);
         TextView currentLocation = findViewById(R.id.current_location);
@@ -82,11 +90,33 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-
         myMap = googleMap;
+        Log.d("MapDebug", "Map is ready");
 
-        LatLng eindhoven = new LatLng(51.4398, 5.4785);
-        myMap.addMarker(new MarkerOptions().position(eindhoven).title("Eindhoven"));
-        myMap.moveCamera(CameraUpdateFactory.newLatLng(eindhoven));
+        FirebaseFirestore.getInstance().collection("posts")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    Log.d("MapDebug", "Loaded posts: " + queryDocumentSnapshots.size());
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        try {
+                            PostModel post = doc.toObject(PostModel.class);
+                            GeoPoint geo = post.getLocation();
+                            if (geo != null) {
+                                LatLng latLng = new LatLng(geo.getLatitude(), geo.getLongitude());
+                                myMap.addMarker(new MarkerOptions()
+                                        .position(latLng)
+                                        .title(post.getTitle())
+                                        .snippet(post.getDescription()));                                Log.d("MapDebug", "Marker added: " + latLng);
+                            } else {
+                                Log.w("MapDebug", "Post missing GeoPoint: " + doc.getId());
+                            }
+                        } catch (Exception e) {
+                            Log.e("MapDebug", "Error parsing post", e);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("MapDebug", "Failed to load posts", e);
+                });
     }
 }

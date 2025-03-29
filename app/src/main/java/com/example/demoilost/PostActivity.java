@@ -1,6 +1,8 @@
 package com.example.demoilost;
 
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -14,8 +16,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.libraries.places.api.Places;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -23,6 +27,7 @@ import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.io.IOException;
 
@@ -69,6 +74,10 @@ public class PostActivity extends AppCompatActivity {
                 createPost(null); // No image selected
             }
         });
+
+        if (!Places.isInitialized()) {
+            Places.initialize(getApplicationContext(), "YOUR_API_KEY_HERE");
+        }
     }
 
     @Override
@@ -132,11 +141,29 @@ public class PostActivity extends AppCompatActivity {
         String title = nameEditText.getText().toString().trim();
         String location = locationEditText.getText().toString().trim();
 
+        GeoPoint geoPoint = null;
+        Geocoder geocoder = new Geocoder(this);
+        try {
+            List<Address> addressList = geocoder.getFromLocationName(location, 1);
+            if (!addressList.isEmpty()) {
+                Address address = addressList.get(0);
+                geoPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
+            } else {
+                Toast.makeText(this, "Location not found", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Geocoding failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
         Map<String, Object> post = new HashMap<>();
         post.put("title", title);
-        post.put("location", location);
+        post.put("location", geoPoint);
         post.put("description", description);
         post.put("posterId", uid);
         post.put("timestamp", com.google.firebase.firestore.FieldValue.serverTimestamp());
