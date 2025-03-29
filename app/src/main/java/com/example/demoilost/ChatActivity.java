@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -27,6 +28,8 @@ import com.google.firebase.firestore.Query;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
+
+import java.io.File;
 import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +62,9 @@ public class ChatActivity extends AppCompatActivity {
     private String chatId;
     private String founderId;
 
+    private Uri cameraImageUri;
+
+    // Gallery image picker
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -68,6 +74,17 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 }
             });
+
+    // Camera image capture
+    private final ActivityResultLauncher<Uri> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.TakePicture(), result -> {
+                if (result && cameraImageUri != null) {
+                    uploadImageToImgur(cameraImageUri);
+                }
+            });
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -163,10 +180,29 @@ public class ChatActivity extends AppCompatActivity {
 
         // Send Image Message
         imageButton.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK);
-            intent.setType("image/*");
-            imagePickerLauncher.launch(intent);
+            String[] options = {"Choose from Gallery", "Take Photo"};
+            new android.app.AlertDialog.Builder(ChatActivity.this)
+                    .setTitle("Send Photo")
+                    .setItems(options, (dialog, which) -> {
+                        if (which == 0) {
+                            // Gallery
+                            Intent intent = new Intent(Intent.ACTION_PICK);
+                            intent.setType("image/*");
+                            imagePickerLauncher.launch(intent);
+                        } else {
+                            // Camera
+                            File photoFile = new File(getCacheDir(), "captured_image_" + System.currentTimeMillis() + ".jpg");
+                            cameraImageUri = FileProvider.getUriForFile(
+                                    ChatActivity.this,
+                                    getPackageName() + ".provider",
+                                    photoFile
+                            );
+                            cameraLauncher.launch(cameraImageUri);
+                        }
+                    })
+                    .show();
         });
+
     }
 
     private void sendMessageToFirestore(Message message) {
