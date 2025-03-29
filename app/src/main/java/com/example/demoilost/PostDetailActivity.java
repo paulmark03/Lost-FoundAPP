@@ -3,7 +3,6 @@ package com.example.demoilost;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import java.util.Arrays;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,6 +16,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,32 +28,29 @@ public class PostDetailActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private String currentUserId, founderId, postId, title, location, description, imageUrl, address;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
 
-        initViews();
         db = FirebaseFirestore.getInstance();
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
+        initViews();
         extractPostData();
         populateUI();
 
-        chatButton.setOnClickListener(view -> initiateChat());
+        // Back button
+        ImageView backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
 
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
+        // Disable chat if viewing own post
         if (founderId != null && founderId.equals(currentUserId)) {
             chatButton.setVisibility(View.GONE);
         }
 
-        ImageView backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> finish());
-
-
-
+        // Chat button
+        chatButton.setOnClickListener(view -> initiateChat());
     }
 
     private void initViews() {
@@ -64,31 +61,28 @@ public class PostDetailActivity extends AppCompatActivity {
         chatButton = findViewById(R.id.chatButton);
     }
 
-    private void extractPostData(){
+    private void extractPostData() {
         Intent intent = getIntent();
         title = intent.getStringExtra("title");
-        location = intent.getStringExtra("location");
-        address = intent.getStringExtra("address");
         description = intent.getStringExtra("description");
         imageUrl = intent.getStringExtra("imageUrl");
         postId = intent.getStringExtra("postId");
         founderId = intent.getStringExtra("founderId");
         address = intent.getStringExtra("address");
-        double latitude = intent.getDoubleExtra("latitude", 0.0);
-        double longitude = intent.getDoubleExtra("longitude", 0.0);
-        String locationText = latitude != 0.0 || longitude != 0.0
-                ? latitude + ", " + longitude
-                : "Location not available";
+
+        // Fallback to lat/lng if address is null
+        if (address == null || address.isEmpty()) {
+            double lat = intent.getDoubleExtra("latitude", 0.0);
+            double lng = intent.getDoubleExtra("longitude", 0.0);
+            address = (lat != 0.0 || lng != 0.0) ? lat + ", " + lng : "Unknown Location";
+        }
     }
-
-
 
     private void populateUI() {
         detailTitleTextView.setText(title != null ? title : "Untitled");
         detailLocationTextView.setText(address != null ? address : "Unknown Location");
         detailDescriptionTextView.setText(description != null ? description : "No description");
 
-        // Load image using Glide
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this)
                     .load(imageUrl)
