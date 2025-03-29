@@ -44,7 +44,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         holder.locationTextView.setText(post.getLocation());
         holder.descriptionTextView.setText(post.getDescription());
 
-        // Load image from URL using Glide
+        // Load image using Glide
         if (post.getImageUrl() != null && !post.getImageUrl().isEmpty()) {
             Glide.with(context)
                     .load(post.getImageUrl())
@@ -54,13 +54,15 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
             holder.postImageView.setImageResource(R.drawable.ic_profile);
         }
 
-        // On click → open PostDetailActivity
+        // On click → open PostDetailActivity with full data
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, PostDetailActivity.class);
             intent.putExtra("title", post.getTitle());
             intent.putExtra("location", post.getLocation());
             intent.putExtra("description", post.getDescription());
-            intent.putExtra("imageUrl", post.getImageUrl()); // pass image URL
+            intent.putExtra("imageUrl", post.getImageUrl());
+            intent.putExtra("postId", post.getPostId());
+            intent.putExtra("founderId", post.getPosterId());
             context.startActivity(intent);
         });
     }
@@ -77,7 +79,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
         public PostViewHolder(@NonNull View itemView) {
             super(itemView);
             postImageView = itemView.findViewById(R.id.postImageView);
-            titleTextView = itemView.findViewById(R.id.titleTextView);        // reuse ID if already in layout
+            titleTextView = itemView.findViewById(R.id.titleTextView);
             locationTextView = itemView.findViewById(R.id.addressTextView);
             descriptionTextView = itemView.findViewById(R.id.detailsTextView);
         }

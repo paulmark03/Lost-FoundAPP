@@ -2,7 +2,6 @@ package com.example.demoilost;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -16,6 +15,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,31 +25,47 @@ public class PostDetailActivity extends AppCompatActivity {
     private TextView detailTitleTextView, detailLocationTextView, detailDescriptionTextView;
     private Button chatButton;
 
+    private FirebaseFirestore db;
+    private String currentUserId, founderId, postId, title, location, description, imageUrl;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
 
+        initViews();
+        db = FirebaseFirestore.getInstance();
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        extractPostData();
+        populateUI();
+
+        chatButton.setOnClickListener(view -> initiateChat());
+    }
+
+    private void initViews() {
         detailImageView = findViewById(R.id.detailImageView);
         detailTitleTextView = findViewById(R.id.detailNameTextView);
         detailLocationTextView = findViewById(R.id.detailAddressTextView);
         detailDescriptionTextView = findViewById(R.id.detailDescriptionTextView);
         chatButton = findViewById(R.id.chatButton);
+    }
 
-        // Get post data from intent
+    private void extractPostData() {
         Intent intent = getIntent();
-        String title = intent.getStringExtra("title");
-        String location = intent.getStringExtra("location");
-        String description = intent.getStringExtra("description");
-        String imageUrl = intent.getStringExtra("imageUrl");
-        String postId = intent.getStringExtra("postId");
-        String founderId = intent.getStringExtra("founderId"); // aka posterId
+        title = intent.getStringExtra("title");
+        location = intent.getStringExtra("location");
+        description = intent.getStringExtra("description");
+        imageUrl = intent.getStringExtra("imageUrl");
+        postId = intent.getStringExtra("postId");
+        founderId = intent.getStringExtra("founderId");
+    }
 
-        detailTitleTextView.setText(title);
-        detailLocationTextView.setText(location);
-        detailDescriptionTextView.setText(description);
+    private void populateUI() {
+        detailTitleTextView.setText(title != null ? title : "Untitled");
+        detailLocationTextView.setText(location != null ? location : "Unknown Location");
+        detailDescriptionTextView.setText(description != null ? description : "No description");
 
-        // Load image using Glide
         if (imageUrl != null && !imageUrl.isEmpty()) {
             Glide.with(this)
                     .load(imageUrl)
@@ -58,31 +74,36 @@ public class PostDetailActivity extends AppCompatActivity {
         } else {
             detailImageView.setImageResource(android.R.color.darker_gray);
         }
+    }
 
-        // 💬 Chat Button
-        chatButton.setOnClickListener(view -> {
-            String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    private void initiateChat() {
+        if (founderId == null || postId == null) {
+            Toast.makeText(this, "Invalid post details", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            String chatId = postId + "_" + founderId + "_" + currentUserId;
+        String chatId = postId + "_" + founderId + "_" + currentUserId;
 
-            Map<String, Object> chatData = new HashMap<>();
-            chatData.put("postId", postId);
-            chatData.put("founderId", founderId);
-            chatData.put("userId", currentUserId);
-            chatData.put("createdAt", FieldValue.serverTimestamp());
+        Map<String, Object> chatData = new HashMap<>();
+        chatData.put("chatId", chatId);
+        chatData.put("postId", postId);
+        chatData.put("founderId", founderId);
+        chatData.put("userId", currentUserId);
+        chatData.put("participants", Arrays.asList(founderId, currentUserId));
+        chatData.put("createdAt", FieldValue.serverTimestamp());
 
-            FirebaseFirestore.getInstance()
-                    .collection("chats")
-                    .document(chatId)
-                    .set(chatData, SetOptions.merge())
-                    .addOnSuccessListener(aVoid -> {
-                        Intent chatIntent = new Intent(PostDetailActivity.this, ChatActivity.class);
-                        chatIntent.putExtra("chatId", chatId);
-                        chatIntent.putExtra("founderId", founderId);
-                        startActivity(chatIntent);
-                    })
-                    .addOnFailureListener(e ->
-                            Toast.makeText(PostDetailActivity.this, "Error initiating chat: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-        });
+        db.collection("chats")
+                .document(chatId)
+                .set(chatData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    Intent chatIntent = new Intent(PostDetailActivity.this, ChatActivity.class);
+                    chatIntent.putExtra("chatId", chatId);
+                    chatIntent.putExtra("founderId", founderId);
+                    chatIntent.putExtra("postId", postId);
+                    startActivity(chatIntent);
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(PostDetailActivity.this, "Error starting chat: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                );
     }
 }

@@ -86,9 +86,35 @@ public class ChatActivity extends AppCompatActivity {
         chatId = getIntent().getStringExtra("chatId");
         founderId = getIntent().getStringExtra("founderId");
 
-        if (chatHeader != null) {
-            chatHeader.setText("Chat with: " + founderId);
-        }
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        firestore.collection("chats")
+                .document(chatId)
+                .get()
+                .addOnSuccessListener(chatDoc -> {
+                    if (chatDoc.exists()) {
+                        String userId = chatDoc.getString("userId");
+                        String founderIdInChat = chatDoc.getString("founderId");
+
+                        String otherUserId = currentUserId.equals(userId) ? founderIdInChat : userId;
+
+                        firestore.collection("users")
+                                .document(otherUserId)
+                                .get()
+                                .addOnSuccessListener(userDoc -> {
+                                    String name = userDoc.getString("name");
+                                    if (chatHeader != null) {
+                                        chatHeader.setText("Chat with: " + (name != null ? name : otherUserId));
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    if (chatHeader != null) {
+                                        chatHeader.setText("Chat with: " + otherUserId);
+                                    }
+                                });
+                    }
+                });
+
 
         // Setup RecyclerView
         chatAdapter = new ChatAdapter(messagesList);

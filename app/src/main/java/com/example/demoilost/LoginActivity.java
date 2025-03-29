@@ -15,6 +15,13 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -94,14 +101,41 @@ public class LoginActivity extends AppCompatActivity {
         auth.signInWithEmailAndPassword(userEmail, userPassword)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Login successful; navigate to MapActivity
-                        Intent intent = new Intent(LoginActivity.this, MapActivity.class);
-                        startActivity(intent);
-                        finish();
+                        // Login successful
+                        FirebaseUser user = auth.getCurrentUser();
+                        if (user != null) {
+                            String uid = user.getUid();
+                            String displayName = user.getDisplayName();
+                            String email = user.getEmail();
+                            String photoUrl = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : "";
+
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("uid", uid);
+                            userData.put("name", displayName != null ? displayName : "Unnamed");
+                            userData.put("email", email);
+                            userData.put("photoUrl", photoUrl);
+
+                            FirebaseFirestore.getInstance()
+                                    .collection("users")
+                                    .document(uid)
+                                    .set(userData, SetOptions.merge())
+                                    .addOnSuccessListener(aVoid -> {
+                                        // Go to MapActivity after saving user
+                                        Intent intent = new Intent(LoginActivity.this, MapActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(LoginActivity.this, "Failed to save user: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                    );
+                        }
                     } else {
-                        // Login failed; show error message
+                        // Login failed
                         Toast.makeText(LoginActivity.this, "Invalid credentials: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
+
+
+
 }

@@ -1,7 +1,6 @@
 package com.example.demoilost;
 
 import android.content.Intent;
-import android.media.Image;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -20,8 +19,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import kotlin.LateinitKt;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -74,7 +71,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 finish();
                 return true;
             } else if (id == R.id.bottom_chat) {
-                startActivity(new Intent(MapActivity.this, MessagesActivity.class));
+                startActivity(new Intent(MapActivity.this, InboxActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 finish();
                 return true;

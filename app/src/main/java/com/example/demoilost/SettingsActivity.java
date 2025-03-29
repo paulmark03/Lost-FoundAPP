@@ -1,7 +1,5 @@
 package com.example.demoilost;
 
-import static androidx.core.content.ContextCompat.startActivity;
-
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -95,7 +93,7 @@ public class SettingsActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.bottom_chat) {
-                startActivity(new Intent(SettingsActivity.this, MessagesActivity.class));
+                startActivity(new Intent(SettingsActivity.this, InboxActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 finish();
                 return true;

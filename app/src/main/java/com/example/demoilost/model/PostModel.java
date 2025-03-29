@@ -11,6 +11,9 @@ public class PostModel {
     private String location;
     private String description;
 
+
+
+
     public PostModel() {} // Required by Firestore
 
     public PostModel(String postId, String posterId, String imageUrl, String title, String location, String description) {

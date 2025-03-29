@@ -2,8 +2,6 @@ package com.example.demoilost;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -59,7 +57,7 @@ public class SearchActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.bottom_chat) {
-                startActivity(new Intent(SearchActivity.this, MessagesActivity.class));
+                startActivity(new Intent(SearchActivity.this, InboxActivity.class));
                 overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
                 finish();
                 return true;
