@@ -67,25 +67,19 @@ public class PostDetailActivity extends AppCompatActivity {
     private void extractPostData(){
         Intent intent = getIntent();
         title = intent.getStringExtra("title");
+        location = intent.getStringExtra("location");
+        address = intent.getStringExtra("address");
         description = intent.getStringExtra("description");
         imageUrl = intent.getStringExtra("imageUrl");
         postId = intent.getStringExtra("postId");
         founderId = intent.getStringExtra("founderId");
-
         address = intent.getStringExtra("address");
-
-        // Fallback to lat/lng if address is null
-        if (address == null || address.isEmpty()) {
-            double lat = intent.getDoubleExtra("latitude", 0.0);
-            double lng = intent.getDoubleExtra("longitude", 0.0);
-            if (lat != 0.0 || lng != 0.0) {
-                address = lat + ", " + lng; // fallback as plain coordinates
-            } else {
-                address = "Unknown Location";
-            }
-        }
+        double latitude = intent.getDoubleExtra("latitude", 0.0);
+        double longitude = intent.getDoubleExtra("longitude", 0.0);
+        String locationText = latitude != 0.0 || longitude != 0.0
+                ? latitude + ", " + longitude
+                : "Location not available";
     }
-
 
 
 
