@@ -18,16 +18,35 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Button to choose a photo -->
-    <Button
-        android:id="@+id/selectPhotoButton"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/buttons_photo"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Select Photo"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintTop_toBottomOf="@id/photoImageView"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <Button
+            android:id="@+id/selectPhotoButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Select Photo" />
+
+        <Button
+            android:id="@+id/selectImageButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Add Photo" />
+
+    </LinearLayout>
+
 
     <!-- EditText for name input -->
     <EditText
@@ -36,7 +55,7 @@
         android:layout_height="wrap_content"
         android:hint="Name"
         android:background="@drawable/rounded_edittext"
-        app:layout_constraintTop_toBottomOf="@id/selectPhotoButton"
+        app:layout_constraintTop_toBottomOf="@id/buttons_photo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"

@@ -5,6 +5,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
@@ -15,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import com.google.android.libraries.places.api.Places;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
@@ -42,11 +45,12 @@ import okhttp3.Response;
 
 public class PostActivity extends AppCompatActivity {
 
-    private static final int SELECT_PHOTO_REQUEST = 100;
+    private static final int REQUEST_IMAGE_CAPTURE = 101;
+    private static final int REQUEST_GALLERY = 102;
     private ImageView photoImageView;
     private Button selectPhotoButton, postButton;
     private EditText descriptionEditText, nameEditText, locationEditText;
-    private Uri selectedPhotoUri;
+    private Uri selectedPhotoUri, cameraPhotoUri;
     private String uploadedImageUrl = null;
 
     @Override
@@ -64,7 +68,7 @@ public class PostActivity extends AppCompatActivity {
         selectPhotoButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
-            startActivityForResult(intent, SELECT_PHOTO_REQUEST);
+            startActivityForResult(intent, REQUEST_GALLERY);
         });
 
         postButton.setOnClickListener(v -> {
@@ -80,10 +84,44 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
+    private void openCameraIntent() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            try {
+                File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                photoFile = File.createTempFile("IMG_", ".jpg", storageDir);
+            } catch (IOException ex) {
+                Toast.makeText(this, "Failed to create file", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (photoFile != null) {
+                cameraPhotoUri = FileProvider.getUriForFile(
+                        this,
+                        getPackageName() + ".provider",
+                        photoFile
+                );
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraPhotoUri);
+                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                startActivityForResult(intent, REQUEST_IMAGE_CAPTURE);
+            }
+        } else {
+            Toast.makeText(this, "No camera app available", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SELECT_PHOTO_REQUEST && resultCode == RESULT_OK && data != null) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            if (cameraPhotoUri != null) {
+                selectedPhotoUri = cameraPhotoUri;
+                photoImageView.setImageURI(cameraPhotoUri);
+            }
+        }
+
+        if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK && data != null) {
             selectedPhotoUri = data.getData();
             photoImageView.setImageURI(selectedPhotoUri);
         }
