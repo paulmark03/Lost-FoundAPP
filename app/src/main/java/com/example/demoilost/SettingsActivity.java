@@ -8,6 +8,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -96,9 +98,25 @@ public class SettingsActivity extends AppCompatActivity {
             startActivity(new Intent(this, MyPostsActivity.class));
         });
 
+
+
+        // Inside onCreate()
+        ActivityResultLauncher<Intent> manageAccountLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        loadUserProfile(); // refresh immediately when name is updated
+                    }
+                }
+        );
+
         findViewById(R.id.rowManageAccount).setOnClickListener(v -> {
-            startActivity(new Intent(this, ManageAccountActivity.class));
+            Intent intent = new Intent(this, ManageAccountActivity.class);
+            manageAccountLauncher.launch(intent);
         });
+
+
+
 
         findViewById(R.id.rowPrivacy).setOnClickListener(v -> {
             new androidx.appcompat.app.AlertDialog.Builder(this)
@@ -147,16 +165,23 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+        // Handle profile picture selection
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             imageUri = data.getData();
 
             // Show preview immediately
             Glide.with(this).load(imageUri).into(profileIcon);
 
-            // Upload to Imgur and update Firebase Auth
+            // Upload to Imgur and update Firebase Auth and Firestore
             uploadToImgur(imageUri);
         }
+
+        // Handle return from ManageAccountActivity
+        if (requestCode == 101 && resultCode == RESULT_OK) {
+            loadUserProfile(); // Refresh name and email if changed
+        }
     }
+
 
 
 
@@ -254,6 +279,7 @@ public class SettingsActivity extends AppCompatActivity {
                             Toast.makeText(SettingsActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 }
 
+
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     if (response.isSuccessful()) {
@@ -279,7 +305,6 @@ public class SettingsActivity extends AppCompatActivity {
             Toast.makeText(this, "Error reading image", Toast.LENGTH_SHORT).show();
         }
     }
-
 
 
 }

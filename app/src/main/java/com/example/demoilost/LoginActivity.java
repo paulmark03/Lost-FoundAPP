@@ -2,6 +2,7 @@ package com.example.demoilost;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -131,6 +132,7 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     } else {
                         // Login failed
+                        Log.e("LoginError", "Login failed", task.getException());
                         Toast.makeText(LoginActivity.this, "Invalid credentials: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });

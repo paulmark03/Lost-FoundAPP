@@ -18,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,21 +72,20 @@ public class ManageAccountActivity extends AppCompatActivity {
             return;
         }
 
-        // Update Firestore (optional, if you store user names there)
         Map<String, Object> updates = new HashMap<>();
-        updates.put("displayName", newName);
-        db.collection("users").document(currentUser.getUid())
-                .set(updates, com.google.firebase.firestore.SetOptions.merge());
+        updates.put("name", newName);
 
-        // Update Firebase Auth profile
-        currentUser.updateProfile(new com.google.firebase.auth.UserProfileChangeRequest.Builder()
-                        .setDisplayName(newName)
-                        .build())
-                .addOnSuccessListener(unused ->
-                        Toast.makeText(this, "Name updated", Toast.LENGTH_SHORT).show())
+        db.collection("users").document(currentUser.getUid())
+                .set(updates, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Name updated", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
+                    finish(); // Go back to Settings
+                })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to update name", Toast.LENGTH_SHORT).show());
     }
+
 
     private void confirmDelete() {
         new AlertDialog.Builder(this)
@@ -106,7 +106,8 @@ public class ManageAccountActivity extends AppCompatActivity {
         currentUser.delete()
                 .addOnSuccessListener(unused -> {
                     Toast.makeText(this, "Account deleted", Toast.LENGTH_SHORT).show();
-                    finishAffinity(); // Close all activities
+                    Intent intent = new Intent(ManageAccountActivity.this, LoginActivity.class);
+                    startActivity(intent);
                 })
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to delete account", Toast.LENGTH_SHORT).show());
