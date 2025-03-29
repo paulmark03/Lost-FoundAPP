@@ -1,6 +1,8 @@
 package com.example.demoilost;
 
 import android.content.Intent;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
@@ -19,7 +21,10 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.google.android.libraries.places.api.Places;
@@ -55,6 +60,8 @@ public class PostActivity extends AppCompatActivity {
 
     private static final int REQUEST_IMAGE_CAPTURE = 101;
     private static final int REQUEST_GALLERY = 102;
+    private static final int CAMERA_PERMISSION_REQUEST_CODE = 200;
+
     private ImageView photoImageView;
     private Button selectPhotoButton, postButton;
     private EditText descriptionEditText, nameEditText, locationEditText;
@@ -111,6 +118,33 @@ public class PostActivity extends AppCompatActivity {
                 .build(this);
         startActivityForResult(intent, 1001);
     }
+
+    private void checkCameraPermissionAndOpen() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA},
+                    CAMERA_PERMISSION_REQUEST_CODE);
+
+        } else {
+            openCameraIntent(); //  your existing method
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                checkCameraPermissionAndOpen();
+            } else {
+                Toast.makeText(this, "Camera permission is required to take photos", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
 
     private void openCameraIntent() {

@@ -66,6 +66,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 intent.putExtra("latitude", geo.getLatitude());
                 intent.putExtra("longitude", geo.getLongitude());
             }
+            intent.putExtra("address", post.getAddress());
             intent.putExtra("description", post.getDescription());
             intent.putExtra("imageUrl", post.getImageUrl());
             intent.putExtra("postId", post.getPostId());

@@ -2,6 +2,9 @@ package com.example.demoilost;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -15,7 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.demoilost.adapter.PostAdapter;
 import com.example.demoilost.model.PostModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -88,6 +93,65 @@ public class SearchActivity extends AppCompatActivity {
                         Toast.makeText(SearchActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
                 );
 
+        EditText searchEditText = findViewById(R.id.searchInput);
+        RecyclerView searchRecyclerView = findViewById(R.id.postsRecyclerView);
+        searchRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        List<PostModel> filteredPosts = new ArrayList<>();
+        PostAdapter adapter = new PostAdapter(this, filteredPosts);
+        searchRecyclerView.setAdapter(adapter);
+
+        searchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().trim().isEmpty()) {
+                    loadAllPosts(filteredPosts, adapter);
+                } else {
+                    searchPosts(s.toString(), filteredPosts, adapter);
+                }
+            }
+
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        loadAllPosts(filteredPosts, adapter);
 
     }
+
+    private void loadAllPosts(List<PostModel> resultList, PostAdapter adapter) {
+        FirebaseFirestore.getInstance().collection("posts")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    resultList.clear();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        PostModel post = doc.toObject(PostModel.class);
+                        resultList.add(post);
+                    }
+                    adapter.notifyDataSetChanged();
+                });
+    }
+
+
+    private void searchPosts(String keyword, List<PostModel> resultList, PostAdapter adapter) {
+        FirebaseFirestore.getInstance().collection("posts")
+                .orderBy("title")
+                .startAt(keyword)
+                .endAt(keyword + "\uf8ff")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    resultList.clear();
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        PostModel post = doc.toObject(PostModel.class);
+                        resultList.add(post);
+                    }
+                    adapter.notifyDataSetChanged();
+                });
+    }
+
 }

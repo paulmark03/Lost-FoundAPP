@@ -26,7 +26,8 @@ public class PostDetailActivity extends AppCompatActivity {
     private TextView detailTitleTextView, detailLocationTextView, detailDescriptionTextView;
     private Button chatButton;
     private FirebaseFirestore db;
-    private String currentUserId, founderId, postId, title, location, description, imageUrl;
+    private String currentUserId, founderId, postId, title, location, description, imageUrl, address;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,23 +67,31 @@ public class PostDetailActivity extends AppCompatActivity {
     private void extractPostData(){
         Intent intent = getIntent();
         title = intent.getStringExtra("title");
-        location = intent.getStringExtra("location");
         description = intent.getStringExtra("description");
         imageUrl = intent.getStringExtra("imageUrl");
         postId = intent.getStringExtra("postId");
         founderId = intent.getStringExtra("founderId");
-        double latitude = intent.getDoubleExtra("latitude", 0.0);
-        double longitude = intent.getDoubleExtra("longitude", 0.0);
-        String locationText = latitude != 0.0 || longitude != 0.0
-                ? latitude + ", " + longitude
-                : "Location not available";
+
+        address = intent.getStringExtra("address");
+
+        // Fallback to lat/lng if address is null
+        if (address == null || address.isEmpty()) {
+            double lat = intent.getDoubleExtra("latitude", 0.0);
+            double lng = intent.getDoubleExtra("longitude", 0.0);
+            if (lat != 0.0 || lng != 0.0) {
+                address = lat + ", " + lng; // fallback as plain coordinates
+            } else {
+                address = "Unknown Location";
+            }
+        }
     }
+
 
 
 
     private void populateUI() {
         detailTitleTextView.setText(title != null ? title : "Untitled");
-        detailLocationTextView.setText(location != null ? location : "Unknown Location");
+        detailLocationTextView.setText(address != null ? address : "Unknown Location");
         detailDescriptionTextView.setText(description != null ? description : "No description");
 
         // Load image using Glide
