@@ -41,6 +41,14 @@ public class PostDetailActivity extends AppCompatActivity {
         populateUI();
 
         chatButton.setOnClickListener(view -> initiateChat());
+
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        if (founderId != null && founderId.equals(currentUserId)) {
+            chatButton.setVisibility(View.GONE);
+        }
+
+
     }
 
     private void initViews() {
