@@ -107,7 +107,6 @@ public class SearchActivity extends AppCompatActivity {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 // This method is intentionally left empty because we don't need to react
                 // before the text is changed. If needed later, you can implement logic here.
-                // Alternatively, throw new UnsupportedOperationException("Not implemented yet");
             }
 
 
@@ -124,9 +123,7 @@ public class SearchActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 // This method is intentionally left blank as we don't need to handle
-                // events after the text has changed. Add logic here if post-processing
-                // is ever needed in the future.
-                // Alternatively, throw new UnsupportedOperationException("Not implemented yet");
+                // events after the text has changed.
             }
         });
 

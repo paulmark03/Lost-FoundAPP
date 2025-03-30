@@ -97,8 +97,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void sendPasswordResetEmail(String email) {
-        FirebaseAuth auth_fix = FirebaseAuth.getInstance();
-        auth_fix.sendPasswordResetEmail(email)
+        FirebaseAuth authFix = FirebaseAuth.getInstance();
+        authFix.sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(LoginActivity.this,

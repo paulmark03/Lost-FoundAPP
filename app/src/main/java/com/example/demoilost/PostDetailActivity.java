@@ -23,7 +23,9 @@ import java.util.Map;
 public class PostDetailActivity extends AppCompatActivity {
 
     private ImageView detailImageView;
-    private TextView detailTitleTextView, detailLocationTextView, detailDescriptionTextView;
+    private TextView detailTitleTextView;
+    private TextView detailLocationTextView;
+    private TextView detailDescriptionTextView;
     private Button chatButton;
     private FirebaseFirestore db;
     private String currentUserId;
@@ -34,8 +36,8 @@ public class PostDetailActivity extends AppCompatActivity {
     private String description;
     private String imageUrl;
     private String address;
-    private String postIdText = "postId";
-    private String founderIdText = "founderId";
+    private String postText = "postId";
+    private String founderText = "founderId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +77,8 @@ public class PostDetailActivity extends AppCompatActivity {
         title = intent.getStringExtra("title");
         description = intent.getStringExtra("description");
         imageUrl = intent.getStringExtra("imageUrl");
-        postId = intent.getStringExtra(postIdText);
-        founderId = intent.getStringExtra(founderIdText);
+        postId = intent.getStringExtra(postText);
+        founderId = intent.getStringExtra(founderText);
         address = intent.getStringExtra("address");
 
         // Fallback to lat/lng if address is null
@@ -112,8 +114,8 @@ public class PostDetailActivity extends AppCompatActivity {
 
         Map<String, Object> chatData = new HashMap<>();
         chatData.put("chatId", chatId);
-        chatData.put(postIdText, postId);
-        chatData.put(founderIdText, founderId);
+        chatData.put(postText, postId);
+        chatData.put(founderText, founderId);
         chatData.put("userId", currentUserId);
         chatData.put("participants", Arrays.asList(founderId, currentUserId));
         chatData.put("createdAt", FieldValue.serverTimestamp());
@@ -124,8 +126,8 @@ public class PostDetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     Intent chatIntent = new Intent(PostDetailActivity.this, ChatActivity.class);
                     chatIntent.putExtra("chatId", chatId);
-                    chatIntent.putExtra(founderIdText, founderId);
-                    chatIntent.putExtra(postIdText, postId);
+                    chatIntent.putExtra(founderText, founderId);
+                    chatIntent.putExtra(postText, postId);
                     startActivity(chatIntent);
                 })
                 .addOnFailureListener(e ->

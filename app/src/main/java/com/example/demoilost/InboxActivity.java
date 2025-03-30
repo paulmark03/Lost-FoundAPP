@@ -188,9 +188,9 @@ public class InboxActivity extends AppCompatActivity {
     }
 
     private void fixChatsFromSenderId() {
-        FirebaseFirestore db_fix = FirebaseFirestore.getInstance();
+        FirebaseFirestore dbFix = FirebaseFirestore.getInstance();
 
-        db_fix.collection(chatmessage)
+        dbFix.collection(chatmessage)
                 .get()
                 .addOnSuccessListener(querySnapshots -> {
                     for (DocumentSnapshot doc : querySnapshots) {
@@ -200,7 +200,7 @@ public class InboxActivity extends AppCompatActivity {
 
                         if (senderId != null && postId != null) {
                             // Get post to find out who the founder is
-                            db_fix.collection("posts")
+                            dbFix.collection("posts")
                                     .document(postId)
                                     .get()
                                     .addOnSuccessListener(postSnapshot -> {
@@ -212,7 +212,7 @@ public class InboxActivity extends AppCompatActivity {
                                             updates.put("chatId", docId);
                                             updates.put("participants", Arrays.asList(senderId, founderId));
 
-                                            db_fix.collection(chatmessage)
+                                            dbFix.collection(chatmessage)
                                                     .document(docId)
                                                     .set(updates, SetOptions.merge());
                                         }
