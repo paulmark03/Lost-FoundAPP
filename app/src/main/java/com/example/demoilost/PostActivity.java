@@ -68,6 +68,24 @@ public class PostActivity extends AppCompatActivity {
     private Uri selectedPhotoUri, cameraPhotoUri;
     private String uploadedImageUrl = null;
     private GeoPoint geoPointFromSearch = null;
+    private boolean isTestMode = false;
+
+    public void setTestMode(boolean testMode) {
+        this.isTestMode = testMode;
+    }
+
+    public void setTestLocation(String address, double latitude, double longitude) {
+        if (locationEditText != null) {
+            locationEditText.setText(address);
+            geoPointFromSearch = new GeoPoint(latitude, longitude);
+        }
+    }
+
+    public void setTestImage(Uri uri) {
+        this.selectedPhotoUri = uri;
+        this.photoImageView.setImageURI(uri);
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,13 +95,16 @@ public class PostActivity extends AppCompatActivity {
         ImageView backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(v -> finish());
 
-
         photoImageView = findViewById(R.id.photoImageView);
         selectPhotoButton = findViewById(R.id.selectPhotoButton);
         postButton = findViewById(R.id.postButton);
         descriptionEditText = findViewById(R.id.descriptionEditText);
         nameEditText = findViewById(R.id.nameEditText);
         locationEditText = findViewById(R.id.locationEditText);
+
+        if (!isTestMode) {
+            locationEditText.setOnClickListener(v -> openAutocomplete());
+        }
 
         selectPhotoButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
@@ -92,20 +113,44 @@ public class PostActivity extends AppCompatActivity {
         });
 
         postButton.setOnClickListener(v -> {
-            if (selectedPhotoUri != null) {
-                uploadImageToImgur(selectedPhotoUri);
+            String title = nameEditText.getText().toString().trim();
+            String location = locationEditText.getText().toString().trim();
+            String description = descriptionEditText.getText().toString().trim();
+
+            if (title.isEmpty()) {
+                nameEditText.setError("Title is required");
+                return;
+            }
+
+            if (location.isEmpty()) {
+                locationEditText.setError("Location is required");
+                return;
+            }
+
+            if (description.isEmpty()) {
+                descriptionEditText.setError("Description is required");
+                return;
+            }
+
+            if (selectedPhotoUri == null && !isTestMode) {
+                Toast.makeText(PostActivity.this, "Please upload an image before posting", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (isTestMode) {
+                createPost("https://i.imgur.com/test.jpg");
             } else {
-                createPost(null); // No image selected
+                uploadImageToImgur(selectedPhotoUri);
             }
         });
+
+
 
         if (!Places.isInitialized()) {
             Places.initialize(getApplicationContext(), "AIzaSyAxay_dovw88a_M3TvSTbL2q_YPbOCYlJA");
         }
-
-        locationEditText.setOnClickListener(v -> openAutocomplete());
-
     }
+
 
     private void openAutocomplete() {
         List<Place.Field> fields = Arrays.asList(
@@ -145,6 +190,9 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
+    private boolean isRunningTest() {
+        return "true".equals(System.getProperty("IS_TESTING"));
+    }
 
 
     private void openCameraIntent() {
@@ -206,6 +254,12 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void uploadImageToImgur(Uri imageUri) {
+        if (isTestMode) {
+            // Fake image URL to speed up test
+            createPost("https://i.imgur.com/test.jpg");
+            return;
+        }
+
         try {
             InputStream inputStream = getContentResolver().openInputStream(imageUri);
             byte[] imageBytes = IOUtils.toByteArray(inputStream);
@@ -219,14 +273,15 @@ public class PostActivity extends AppCompatActivity {
 
             Request request = new Request.Builder()
                     .url("https://api.imgur.com/3/image")
-                    .header("Authorization", "Client-ID ad8d936a2f446c7") // Replace with real Client ID
+                    .header("Authorization", "Client-ID ad8d936a2f446c7")
                     .post(body)
                     .build();
 
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
-                    runOnUiThread(() -> Toast.makeText(PostActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() ->
+                            Toast.makeText(PostActivity.this, "Upload failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 }
 
                 @Override
@@ -238,10 +293,12 @@ public class PostActivity extends AppCompatActivity {
                             uploadedImageUrl = jsonObject.getJSONObject("data").getString("link");
                             runOnUiThread(() -> createPost(uploadedImageUrl));
                         } catch (JSONException e) {
-                            runOnUiThread(() -> Toast.makeText(PostActivity.this, "Error parsing image URL", Toast.LENGTH_SHORT).show());
+                            runOnUiThread(() ->
+                                    Toast.makeText(PostActivity.this, "Error parsing image URL", Toast.LENGTH_SHORT).show());
                         }
                     } else {
-                        runOnUiThread(() -> Toast.makeText(PostActivity.this, "Imgur upload failed", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() ->
+                                Toast.makeText(PostActivity.this, "Imgur upload failed", Toast.LENGTH_SHORT).show());
                     }
                 }
             });
@@ -251,6 +308,7 @@ public class PostActivity extends AppCompatActivity {
             Toast.makeText(this, "Failed to read image", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void createPost(String imageUrl) {
         String description = descriptionEditText.getText().toString().trim();
@@ -281,6 +339,9 @@ public class PostActivity extends AppCompatActivity {
                 .add(post)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(PostActivity.this, "Post created!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(PostActivity.this, MapActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                     finish();
                 })
                 .addOnFailureListener(e ->

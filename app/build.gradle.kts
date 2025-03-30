@@ -36,6 +36,8 @@ android {
     }
 }
 
+
+
 dependencies {
     implementation(libs.appcompat)
     implementation(libs.material)
@@ -54,10 +56,15 @@ dependencies {
     implementation(libs.play.services.maps.v1900)
     // Glide for loading images
     implementation(libs.glide)
-    implementation("com.google.android.libraries.places:places:4.2.0")
+    implementation(libs.places)
     annotationProcessor(libs.compiler)
     implementation (libs.okhttp)
     implementation (libs.commons.io)
+    androidTestImplementation(libs.espresso.intents)
+}
 
-
+configurations.all {
+    resolutionStrategy {
+        force("com.google.protobuf:protobuf-javalite:3.21.7")
+    }
 }
