@@ -85,12 +85,24 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
+    public void testSendImageFromDrawable() {
+        Uri imageUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.drawable.test_image);
+        uploadImageToImgur(imageUri);
+    }
+
+    boolean isTestMode = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        isTestMode = getIntent().getBooleanExtra("testMode", false);
+
+        if (isTestMode) {
+            testSendImageFromDrawable();
+        }
         // Init views
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
         inputMessage = findViewById(R.id.messageInput);
@@ -221,7 +233,9 @@ public class ChatActivity extends AppCompatActivity {
     }
 
 
-    private void uploadImageToImgur(Uri imageUri) {
+
+
+    void uploadImageToImgur(Uri imageUri) {
         try {
             InputStream inputStream = getContentResolver().openInputStream(imageUri);
             byte[] imageBytes = IOUtils.toByteArray(inputStream);

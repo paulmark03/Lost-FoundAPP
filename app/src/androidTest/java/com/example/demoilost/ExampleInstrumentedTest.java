@@ -2,6 +2,7 @@ package com.example.demoilost;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,13 +35,16 @@ import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intending;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.hasErrorText;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -686,4 +690,61 @@ public class ExampleInstrumentedTest {
 
         onView(withText(message)).check(matches(isDisplayed()));
     }
+
+    @Test
+    public void C3testMessagingSendImage() {
+        ActivityScenario.launch(LoginActivity.class);
+
+        // Log in
+        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.loginButton)).perform(click());
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.bottom_chat)).perform(click());
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Click on first visible chat
+        onView(withId(R.id.chatPostId)).perform(click());
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Simulate selecting test image (stored in drawable)
+
+        Intent chatIntent = new Intent(ApplicationProvider.getApplicationContext(), ChatActivity.class);
+        chatIntent.putExtra("chatId", "your_test_chat_id");
+        chatIntent.putExtra("founderId", "test_founder_id");
+        chatIntent.putExtra("testMode", true);
+        chatIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        ApplicationProvider.getApplicationContext().startActivity(chatIntent);
+
+
+
+        // Wait for message to appear
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Check if image message is displayed (assumes image messages show a known placeholder or test link)
+        onView(withId(R.id.chatRecyclerView))
+                .check(matches(hasDescendant(withContentDescription("chat_image"))));
+
+    }
+
+
 }

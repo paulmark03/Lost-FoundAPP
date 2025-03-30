@@ -19,6 +19,7 @@ import java.util.List;
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
     private List<Message> messages;
+
     private String currentUserId;
 
     public ChatAdapter(List<Message> messages) {
@@ -43,12 +44,14 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
         if ("image".equals(message.getMessageType())) {
             holder.textView.setVisibility(View.GONE);
             holder.imageView.setVisibility(View.VISIBLE);
+            holder.imageView.setContentDescription("chat_image");
             Glide.with(holder.imageView.getContext())
                     .load(message.getImageUrl())
                     .placeholder(R.drawable.ic_image_placeholder)
                     .into(holder.imageView);
         } else {
             holder.textView.setVisibility(View.VISIBLE);
+            holder.imageView.setContentDescription("chat_image");
             holder.imageView.setVisibility(View.GONE);
             holder.textView.setText(message.getText());
         }
