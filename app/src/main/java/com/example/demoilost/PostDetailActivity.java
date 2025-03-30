@@ -26,7 +26,16 @@ public class PostDetailActivity extends AppCompatActivity {
     private TextView detailTitleTextView, detailLocationTextView, detailDescriptionTextView;
     private Button chatButton;
     private FirebaseFirestore db;
-    private String currentUserId, founderId, postId, title, location, description, imageUrl, address;
+    private String currentUserId;
+    private String founderId;
+    private String postId;
+    private String title;
+    private String location;
+    private String description;
+    private String imageUrl;
+    private String address;
+    private String postid = "postId";
+    private String founderid = "founderId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +75,8 @@ public class PostDetailActivity extends AppCompatActivity {
         title = intent.getStringExtra("title");
         description = intent.getStringExtra("description");
         imageUrl = intent.getStringExtra("imageUrl");
-        postId = intent.getStringExtra("postId");
-        founderId = intent.getStringExtra("founderId");
+        postId = intent.getStringExtra(postid);
+        founderId = intent.getStringExtra(founderid);
         address = intent.getStringExtra("address");
 
         // Fallback to lat/lng if address is null
@@ -103,8 +112,8 @@ public class PostDetailActivity extends AppCompatActivity {
 
         Map<String, Object> chatData = new HashMap<>();
         chatData.put("chatId", chatId);
-        chatData.put("postId", postId);
-        chatData.put("founderId", founderId);
+        chatData.put(postid, postId);
+        chatData.put(founderid, founderId);
         chatData.put("userId", currentUserId);
         chatData.put("participants", Arrays.asList(founderId, currentUserId));
         chatData.put("createdAt", FieldValue.serverTimestamp());
@@ -115,8 +124,8 @@ public class PostDetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     Intent chatIntent = new Intent(PostDetailActivity.this, ChatActivity.class);
                     chatIntent.putExtra("chatId", chatId);
-                    chatIntent.putExtra("founderId", founderId);
-                    chatIntent.putExtra("postId", postId);
+                    chatIntent.putExtra(founderid, founderId);
+                    chatIntent.putExtra(postid, postId);
                     startActivity(chatIntent);
                 })
                 .addOnFailureListener(e ->

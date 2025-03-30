@@ -15,11 +15,15 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private EditText nameInput, emailInput, passwordInput, confirmPasswordInput;
+    private EditText nameInput;
+    private EditText emailInput;
+    private EditText passwordInput;
+    private EditText confirmPasswordInput;
     private CheckBox termsCheckbox;
     private Button signupButton;
     private TextView loginRedirect;
     private FirebaseAuth auth; // Firebase Authentication instance
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

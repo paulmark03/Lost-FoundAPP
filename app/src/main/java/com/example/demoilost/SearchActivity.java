@@ -31,6 +31,7 @@ public class SearchActivity extends AppCompatActivity {
     private RecyclerView postsRecyclerView;
     private PostAdapter postAdapter;
     private List<PostModel> postList;
+    private String posts = "posts";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +79,7 @@ public class SearchActivity extends AppCompatActivity {
         postsRecyclerView.setAdapter(postAdapter);
 
         // Fetch data from Firestore
-        FirebaseFirestore.getInstance().collection("posts")
+        FirebaseFirestore.getInstance().collection(posts)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     postList.clear();
@@ -103,7 +104,12 @@ public class SearchActivity extends AppCompatActivity {
 
         searchEditText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // This method is intentionally left empty because we don't need to react
+                // before the text is changed. If needed later, you can implement logic here.
+                // Alternatively, throw new UnsupportedOperationException("Not implemented yet");
+            }
+
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -116,7 +122,12 @@ public class SearchActivity extends AppCompatActivity {
 
 
             @Override
-            public void afterTextChanged(Editable s) {}
+            public void afterTextChanged(Editable s) {
+                // This method is intentionally left blank as we don't need to handle
+                // events after the text has changed. Add logic here if post-processing
+                // is ever needed in the future.
+                // Alternatively, throw new UnsupportedOperationException("Not implemented yet");
+            }
         });
 
         loadAllPosts(filteredPosts, adapter);
@@ -124,7 +135,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private void loadAllPosts(List<PostModel> resultList, PostAdapter adapter) {
-        FirebaseFirestore.getInstance().collection("posts")
+        FirebaseFirestore.getInstance().collection(posts)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -139,7 +150,7 @@ public class SearchActivity extends AppCompatActivity {
 
 
     private void searchPosts(String keyword, List<PostModel> resultList, PostAdapter adapter) {
-        FirebaseFirestore.getInstance().collection("posts")
+        FirebaseFirestore.getInstance().collection(posts)
                 .orderBy("title")
                 .startAt(keyword)
                 .endAt(keyword + "\uf8ff")

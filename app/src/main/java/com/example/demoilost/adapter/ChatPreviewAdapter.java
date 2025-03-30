@@ -82,7 +82,9 @@ public class ChatPreviewAdapter extends RecyclerView.Adapter<ChatPreviewAdapter.
     }
 
     public static class ChatViewHolder extends RecyclerView.ViewHolder {
-        TextView chatWithUser, chatPostId;
+        TextView chatWithUser;
+        TextView chatPostId;
+
 
         public ChatViewHolder(@NonNull View itemView) {
             super(itemView);

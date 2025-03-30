@@ -44,7 +44,8 @@ import android.widget.LinearLayout;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    TextView profileName, username;
+    TextView profileName;
+    TextView username;
     ImageView profileIcon;
 
     //Image URI

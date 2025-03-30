@@ -41,6 +41,7 @@ public class InboxActivity extends AppCompatActivity {
     private List<ChatPreviewModel> chatList;
     private FirebaseFirestore db;
     private String currentUserId;
+    private String chatmessage = "chats";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,11 +96,11 @@ public class InboxActivity extends AppCompatActivity {
                 String chatId = chat.getChatId();
 
                 // Delete chat document
-                FirebaseFirestore.getInstance().collection("chats").document(chatId)
+                FirebaseFirestore.getInstance().collection(chatmessage).document(chatId)
                         .delete()
                         .addOnSuccessListener(unused -> {
                             // Also delete messages subcollection
-                            FirebaseFirestore.getInstance().collection("chats")
+                            FirebaseFirestore.getInstance().collection(chatmessage)
                                     .document(chatId).collection("messages")
                                     .get()
                                     .addOnSuccessListener(query -> {
@@ -147,7 +148,7 @@ public class InboxActivity extends AppCompatActivity {
         chatList.clear();
 
         // 1. Load chats where I am the sender
-        db.collection("chats")
+        db.collection(chatmessage)
                 .whereEqualTo("userId", currentUserId)
                 .get()
                 .addOnSuccessListener(userChats -> {
@@ -157,7 +158,7 @@ public class InboxActivity extends AppCompatActivity {
                     }
 
                     // 2. Load chats where I am the receiver (founder)
-                    db.collection("chats")
+                    db.collection(chatmessage)
                             .whereEqualTo("founderId", currentUserId)
                             .get()
                             .addOnSuccessListener(founderChats -> {
@@ -187,9 +188,9 @@ public class InboxActivity extends AppCompatActivity {
     }
 
     private void fixChatsFromSenderId() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        FirebaseFirestore db_fix = FirebaseFirestore.getInstance();
 
-        db.collection("chats")
+        db_fix.collection(chatmessage)
                 .get()
                 .addOnSuccessListener(querySnapshots -> {
                     for (DocumentSnapshot doc : querySnapshots) {
@@ -199,7 +200,7 @@ public class InboxActivity extends AppCompatActivity {
 
                         if (senderId != null && postId != null) {
                             // Get post to find out who the founder is
-                            db.collection("posts")
+                            db_fix.collection("posts")
                                     .document(postId)
                                     .get()
                                     .addOnSuccessListener(postSnapshot -> {
@@ -211,7 +212,7 @@ public class InboxActivity extends AppCompatActivity {
                                             updates.put("chatId", docId);
                                             updates.put("participants", Arrays.asList(senderId, founderId));
 
-                                            db.collection("chats")
+                                            db_fix.collection(chatmessage)
                                                     .document(docId)
                                                     .set(updates, SetOptions.merge());
                                         }

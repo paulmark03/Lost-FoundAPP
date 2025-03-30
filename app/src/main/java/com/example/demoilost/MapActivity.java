@@ -37,6 +37,7 @@ import java.util.Locale;
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap myMap;
+    private String mapDebug = "MapDebug";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +59,6 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         }
         ImageButton searchButton = findViewById(R.id.search_location_button);
         ImageButton postButton = findViewById(R.id.post_button);
-        TextView currentLocation = findViewById(R.id.current_location);
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
         bottomNavigationView.setSelectedItemId(R.id.bottom_map);
 
@@ -147,12 +147,12 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     public void onMapReady(@NonNull GoogleMap googleMap) {
         myMap = googleMap;
         myMap.getUiSettings().setZoomGesturesEnabled(true);
-        Log.d("MapDebug", "Map is ready");
+        Log.d(mapDebug, "Map is ready");
 
         FirebaseFirestore.getInstance().collection("posts")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    Log.d("MapDebug", "Loaded posts: " + queryDocumentSnapshots.size());
+                    Log.d(mapDebug, "Loaded posts: " + queryDocumentSnapshots.size());
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         try {
                             PostModel post = doc.toObject(PostModel.class);
@@ -162,17 +162,17 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                                 myMap.addMarker(new MarkerOptions()
                                         .position(latLng)
                                         .title(post.getTitle())
-                                        .snippet(post.getDescription()));                                Log.d("MapDebug", "Marker added: " + latLng);
+                                        .snippet(post.getDescription()));                                Log.d(mapDebug, "Marker added: " + latLng);
                             } else {
-                                Log.w("MapDebug", "Post missing GeoPoint: " + doc.getId());
+                                Log.w(mapDebug, "Post missing GeoPoint: " + doc.getId());
                             }
                         } catch (Exception e) {
-                            Log.e("MapDebug", "Error parsing post", e);
+                            Log.e(mapDebug, "Error parsing post", e);
                         }
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Log.e("MapDebug", "Failed to load posts", e);
+                    Log.e(mapDebug, "Failed to load posts", e);
                 });
     }
 }

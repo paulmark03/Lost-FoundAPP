@@ -63,9 +63,13 @@ public class PostActivity extends AppCompatActivity {
     private static final int CAMERA_PERMISSION_REQUEST_CODE = 200;
 
     private ImageView photoImageView;
-    private Button selectPhotoButton, postButton;
-    private EditText descriptionEditText, nameEditText, locationEditText;
-    private Uri selectedPhotoUri, cameraPhotoUri;
+    private Button selectPhotoButton;
+    private Button postButton;
+    private EditText descriptionEditText;
+    private EditText nameEditText;
+    private EditText locationEditText;
+    private Uri selectedPhotoUri;
+    private Uri cameraPhotoUri;
     private String uploadedImageUrl = null;
     private GeoPoint geoPointFromSearch = null;
     private boolean isTestMode = false;
@@ -191,9 +195,7 @@ public class PostActivity extends AppCompatActivity {
         }
     }
 
-    private boolean isRunningTest() {
-        return "true".equals(System.getProperty("IS_TESTING"));
-    }
+
 
 
     private void openCameraIntent() {
@@ -241,12 +243,11 @@ public class PostActivity extends AppCompatActivity {
             }
         }
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            if (cameraPhotoUri != null) {
-                selectedPhotoUri = cameraPhotoUri;
-                photoImageView.setImageURI(cameraPhotoUri);
-            }
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && cameraPhotoUri != null) {
+            selectedPhotoUri = cameraPhotoUri;
+            photoImageView.setImageURI(cameraPhotoUri);
         }
+
 
         if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK && data != null) {
             selectedPhotoUri = data.getData();

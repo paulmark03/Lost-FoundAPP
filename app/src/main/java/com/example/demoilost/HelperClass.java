@@ -2,7 +2,9 @@ package com.example.demoilost;
 
 public class HelperClass {
 
-    String name, email, password;
+    String name;
+    String email;
+    String password;
 
     public String getName() {
         return name;

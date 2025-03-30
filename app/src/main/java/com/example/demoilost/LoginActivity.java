@@ -28,8 +28,10 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText emailInput, passwordInput;
-    private TextView forgotPassword, registerNow;
+    private EditText emailInput;
+    private EditText passwordInput;
+    private TextView forgotPassword;
+    private TextView registerNow;
     private Button loginButton;
     private FirebaseAuth auth;
 
@@ -95,8 +97,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void sendPasswordResetEmail(String email) {
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        auth.sendPasswordResetEmail(email)
+        FirebaseAuth auth_fix = FirebaseAuth.getInstance();
+        auth_fix.sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(LoginActivity.this,

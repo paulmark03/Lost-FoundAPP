@@ -9,7 +9,10 @@ public class ChatPreviewModel {
     private String lastMessage; // ✅ ADD THIS
 
     // Empty constructor for Firestore
-    public ChatPreviewModel() {}
+    public ChatPreviewModel() {
+        // Default constructor required for Firebase deserialization.
+        // Firebase uses reflection to instantiate model objects.
+    }
 
     // Getters and Setters
     public String getChatId() {
