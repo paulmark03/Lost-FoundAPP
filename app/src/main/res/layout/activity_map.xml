@@ -26,6 +26,7 @@
         android:orientation="horizontal"
         android:background="#F8F9FE">
 
+
         <ImageButton
             android:id="@+id/post_button"
             android:layout_width="40dp"

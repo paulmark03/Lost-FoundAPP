@@ -139,6 +139,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         myMap = googleMap;
+        myMap.getUiSettings().setZoomGesturesEnabled(true);
         Log.d("MapDebug", "Map is ready");
 
         FirebaseFirestore.getInstance().collection("posts")

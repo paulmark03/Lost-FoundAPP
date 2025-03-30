@@ -2,6 +2,7 @@ package com.example.demoilost;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -54,9 +56,32 @@ public class LoginActivity extends AppCompatActivity {
 //            return insets;
 //        });
 
-        // Forgot Password Click Event
-        forgotPassword.setOnClickListener(v ->
-                Toast.makeText(LoginActivity.this, "Forgot Password Clicked", Toast.LENGTH_SHORT).show());
+        forgotPassword.setOnClickListener(v -> {
+            // Show a dialog to collect the user's email
+            AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
+            builder.setTitle("Reset Password");
+
+            final EditText inputEmail = new EditText(LoginActivity.this);
+            inputEmail.setHint("Enter your email");
+            builder.setView(inputEmail);
+
+            builder.setPositiveButton("Send Reset Link", (dialog, which) -> {
+                String email = inputEmail.getText().toString().trim();
+                if (!TextUtils.isEmpty(email)) {
+                    sendPasswordResetEmail(email);
+                } else {
+                    Toast.makeText(LoginActivity.this,
+                            "Please enter an email address", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            builder.setNegativeButton("Cancel", (dialogInterface, i) ->
+                    dialogInterface.dismiss()
+            );
+
+            builder.show();
+        });
+
 
         // Register Now Click Event
         registerNow.setOnClickListener(v -> {
@@ -71,6 +96,24 @@ public class LoginActivity extends AppCompatActivity {
             }
             signInUser();
         });
+    }
+
+    private void sendPasswordResetEmail(String email) {
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        auth.sendPasswordResetEmail(email)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(LoginActivity.this,
+                                "Reset link sent to " + email,
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        String error = (task.getException() != null)
+                                ? task.getException().getMessage() : "unknown error";
+                        Toast.makeText(LoginActivity.this,
+                                "Error: " + error,
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 
     public Boolean validateEmail() {
