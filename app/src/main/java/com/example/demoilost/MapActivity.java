@@ -116,16 +116,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void searchLocationAndZoom(String addressText) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        TextView currentLocationTextView = findViewById(R.id.current_location);
+
         try {
             List<Address> addresses = geocoder.getFromLocationName(addressText, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
+
                 double lat = address.getLatitude();
                 double lng = address.getLongitude();
-
                 LatLng latLng = new LatLng(lat, lng);
-                // Zoom level can be 2.0 - 21.0
+
+                // Move and zoom the map
                 myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
+
+                currentLocationTextView.setText(addressText);
+
             } else {
                 Toast.makeText(this, "No location found for: " + addressText, Toast.LENGTH_SHORT).show();
             }
@@ -134,6 +140,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             e.printStackTrace();
         }
     }
+
 
 
     @Override
