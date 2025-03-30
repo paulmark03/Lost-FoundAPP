@@ -29,6 +29,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.intent.Intents.intending;
 import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
@@ -562,14 +563,127 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.detailNameTextView)).check(matches(isDisplayed()));
     }
 
+    @Test
+    public void C3testMessagingViewSendDelete() {
+        ActivityScenario.launch(LoginActivity.class);
+
+        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.loginButton)).perform(click());
+
+        try {
+            Thread.sleep(2000); // Let posts load
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        onView(withId(R.id.bottom_chat)).perform(click());
+
+        try {
+            Thread.sleep(2000); // Let posts load
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Click any visible post title to navigate
+        onView(withId(R.id.chatPostId)).perform(click());
 
 
 
+        // Step 1: Send a message
+        String testMessage = "Hello Espresso";
 
+        onView(withId(R.id.messageInput)).perform(typeText(testMessage), closeSoftKeyboard());
+        onView(withId(R.id.sendButton)).perform(click());
 
+        // Step 2: Check that the message appears
+        try {
+            Thread.sleep(1500); // wait for Firestore listener to sync
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
+        onView(withText(testMessage)).check(matches(isDisplayed()));
 
+        try {
+            Thread.sleep(1500); // wait for Firestore listener to sync
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
+        onView(withId(R.id.backButton)).perform(click());
 
+        onView(allOf(withId(R.id.chatPostId)))
+                .perform(ViewActions.swipeLeft());
 
+        // Wait for animation/deletion
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Confirm it's gone
+        onView(withId(R.id.messageTextView)).check(doesNotExist());
+
+    }
+
+    @Test
+    public void D3testStartChatFromItemListing() {
+        ActivityScenario.launch(LoginActivity.class);
+
+        // Log in
+        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.loginButton)).perform(click());
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Navigate to Search tab
+        onView(withId(R.id.bottom_search)).perform(click());
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Click first visible post title
+        onView(FirstViewMatcher.first(allOf(
+                withId(R.id.titleTextView),
+                isDescendantOfA(withId(R.id.postsRecyclerView))
+        ))).perform(click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Tap the "Chat with Founder" button
+        onView(withId(R.id.chatButton)).perform(click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Send message in chat
+        String message = "Interested in this item!";
+        onView(withId(R.id.messageInput)).perform(typeText(message), closeSoftKeyboard());
+        onView(withId(R.id.sendButton)).perform(click());
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        onView(withText(message)).check(matches(isDisplayed()));
+    }
 }
