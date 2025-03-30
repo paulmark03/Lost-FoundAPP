@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -100,17 +101,32 @@ public class ManageAccountActivity extends AppCompatActivity {
     private void deleteAccount() {
         String userId = currentUser.getUid();
 
-        // Delete user from Firestore
-        db.collection("users").document(userId).delete();
+        // Step 1: Delete all user's posts
+        db.collection("posts")
+                .whereEqualTo("posterId", userId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                        doc.getReference().delete();
+                    }
 
-        // Delete user from Firebase Auth
-        currentUser.delete()
-                .addOnSuccessListener(unused -> {
-                    Toast.makeText(this, "Account deleted", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(ManageAccountActivity.this, LoginActivity.class);
-                    startActivity(intent);
+                    // Step 2: Delete user document from Firestore
+                    db.collection("users").document(userId).delete();
+
+                    // Step 3: Delete user from Firebase Auth
+                    currentUser.delete()
+                            .addOnSuccessListener(unused -> {
+                                Toast.makeText(this, "Account and posts deleted", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(ManageAccountActivity.this, LoginActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                                startActivity(intent);
+                            })
+                            .addOnFailureListener(e ->
+                                    Toast.makeText(this, "Failed to delete account", Toast.LENGTH_SHORT).show());
+
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to delete account", Toast.LENGTH_SHORT).show());
+                        Toast.makeText(this, "Failed to delete posts: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
+
 }

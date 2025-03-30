@@ -18,6 +18,8 @@ import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry;
+import androidx.test.runner.lifecycle.Stage;
 
 
 import org.junit.FixMethodOrder;
@@ -32,8 +34,6 @@ import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
-import static androidx.test.espresso.intent.Intents.intending;
-import static androidx.test.espresso.intent.matcher.IntentMatchers.hasAction;
 import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.hasErrorText;
@@ -46,12 +46,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @RunWith(AndroidJUnit4.class)
@@ -63,8 +63,8 @@ public class ExampleInstrumentedTest {
     private void loginWithTestUser() {
         ActivityScenario.launch(LoginActivity.class);
 
-        onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
-        onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
+        onView(withId(R.id.email)).perform(typeText("newuser@example.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("validpass123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
         // Optionally wait for navigation to MapActivity
@@ -338,7 +338,144 @@ public class ExampleInstrumentedTest {
     }
 
     @Test
-    public void B4testDeleteAccountFlow() {
+    public void B4testCreatePostWithAllDetails() {
+        Intents.init();
+
+        loginWithTestUser();
+
+        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
+
+        scenario.onActivity(activity -> {
+            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
+
+            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
+            activity.setTestImage(fakeUri);
+        });
+
+        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
+        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
+        onView(withId(R.id.postButton)).perform(click());
+
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.map)).check(matches(isDisplayed()));
+
+        Intents.release();
+    }
+
+    @Test
+    public void B5testCreatePostMissingTitle() {
+        Intents.init();
+
+        loginWithTestUser();
+        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
+
+        scenario.onActivity(activity -> {
+            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
+
+            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
+            activity.setTestImage(fakeUri);
+        });
+
+        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
+        onView(withId(R.id.postButton)).perform(click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
+
+        Intents.release();
+    }
+
+    @Test
+    public void B6testCreatePostMissingDescription() {
+        Intents.init();
+
+        loginWithTestUser();
+        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
+
+        scenario.onActivity(activity -> {
+            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
+
+            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
+            activity.setTestImage(fakeUri);
+        });
+
+        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
+        onView(withId(R.id.postButton)).perform(click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
+
+        Intents.release();
+    }
+
+    @Test
+    public void B7testCreatePostMissingLocation() {
+        Intents.init();
+
+        loginWithTestUser();
+        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
+
+        scenario.onActivity(activity -> {
+
+            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
+            activity.setTestImage(fakeUri);
+        });
+
+        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
+        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
+        onView(withId(R.id.postButton)).perform(click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
+
+        Intents.release();
+    }
+
+    @Test
+    public void B8testCreatePostMissingImage() {
+        Intents.init();
+
+        loginWithTestUser();
+        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
+
+        scenario.onActivity(activity -> {
+            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
+        });
+
+        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
+        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
+        onView(withId(R.id.postButton)).perform(click());
+
+        try {
+            Thread.sleep(1500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
+
+        Intents.release();
+    }
+
+    @Test
+    public void B9testDeleteAccountFlow() {
+
+        loginWithTestUser();
         ActivityScenario.launch(ManageAccountActivity.class);
 
         // Click the delete button
@@ -355,139 +492,9 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
     }
 
-    @Test
-    public void B5testCreatePostWithAllDetails() {
-        Intents.init();
 
-        loginWithTestUser();
-        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
 
-        scenario.onActivity(activity -> {
-            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
 
-            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
-            activity.setTestImage(fakeUri);
-        });
-
-        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
-        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
-        onView(withId(R.id.postButton)).perform(click());
-
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        onView(withId(R.id.map)).check(matches(isDisplayed()));
-
-        Intents.release();
-    }
-
-    @Test
-    public void B6testCreatePostMissingTitle() {
-        Intents.init();
-
-        loginWithTestUser();
-        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
-
-        scenario.onActivity(activity -> {
-            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
-
-            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
-            activity.setTestImage(fakeUri);
-        });
-
-        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
-        onView(withId(R.id.postButton)).perform(click());
-
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
-
-        Intents.release();
-    }
-
-    @Test
-    public void B7testCreatePostMissingDescription() {
-        Intents.init();
-
-        loginWithTestUser();
-        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
-
-        scenario.onActivity(activity -> {
-            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
-
-            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
-            activity.setTestImage(fakeUri);
-        });
-
-        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
-        onView(withId(R.id.postButton)).perform(click());
-
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
-
-        Intents.release();
-    }
-
-    @Test
-    public void B8testCreatePostMissingLocation() {
-        Intents.init();
-
-        loginWithTestUser();
-        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
-
-        scenario.onActivity(activity -> {
-
-            Uri fakeUri = Uri.parse("android.resource://com.example.demoilost/drawable/test_image");
-            activity.setTestImage(fakeUri);
-        });
-
-        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
-        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
-        onView(withId(R.id.postButton)).perform(click());
-
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
-
-        Intents.release();
-    }
-
-    @Test
-    public void B9testCreatePostMissingImage() {
-        Intents.init();
-
-        loginWithTestUser();
-        ActivityScenario<PostActivity> scenario = ActivityScenario.launch(PostActivity.class);
-
-        scenario.onActivity(activity -> {
-            activity.setTestLocation("Main Street, London", 51.5074, -0.1278);
-        });
-
-        onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
-        onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
-        onView(withId(R.id.postButton)).perform(click());
-
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        onView(withId(R.id.postButton)).check(matches(isDisplayed()));
-
-        Intents.release();
-    }
 
 
 
@@ -528,8 +535,8 @@ public class ExampleInstrumentedTest {
     public void C2testViewItemDetails() {
         ActivityScenario.launch(LoginActivity.class);
 
-        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
-        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
         try {
@@ -561,78 +568,15 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.detailNameTextView)).check(matches(isDisplayed()));
     }
 
-    @Test
-    public void C3testMessagingViewSendDelete() {
-        ActivityScenario.launch(LoginActivity.class);
 
-        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
-        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
-        onView(withId(R.id.loginButton)).perform(click());
-
-        try {
-            Thread.sleep(2000); // Let posts load
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        onView(withId(R.id.bottom_chat)).perform(click());
-
-        try {
-            Thread.sleep(2000); // Let posts load
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Click any visible post title to navigate
-        onView(withId(R.id.chatPostId)).perform(click());
-
-
-
-        // Step 1: Send a message
-        String testMessage = "Hello Espresso";
-
-        onView(withId(R.id.messageInput)).perform(typeText(testMessage), closeSoftKeyboard());
-        onView(withId(R.id.sendButton)).perform(click());
-
-        // Step 2: Check that the message appears
-        try {
-            Thread.sleep(1500); // wait for Firestore listener to sync
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        onView(withText(testMessage)).check(matches(isDisplayed()));
-
-        try {
-            Thread.sleep(1500); // wait for Firestore listener to sync
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        onView(withId(R.id.backButton)).perform(click());
-
-        onView(allOf(withId(R.id.chatPostId)))
-                .perform(ViewActions.swipeLeft());
-
-        // Wait for animation/deletion
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Confirm it's gone
-        onView(withId(R.id.messageTextView)).check(doesNotExist());
-
-    }
 
     @Test
-    public void C4testStartChatFromItemListing() {
+    public void C3testStartChatFromItemListing() {
         ActivityScenario.launch(LoginActivity.class);
 
         // Log in
-        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
-        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
         try {
@@ -686,67 +630,133 @@ public class ExampleInstrumentedTest {
     }
 
     @Test
-    public void C5testMessagingSendImage() {
+    public void C4testMessagingSendImage() throws InterruptedException {
         ActivityScenario.launch(LoginActivity.class);
 
-        // Log in
-        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
-        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
+        onView(withId(R.id.loginButton)).perform(click());
+
+        Thread.sleep(2000);
+        onView(withId(R.id.bottom_chat)).perform(click());
+        Thread.sleep(2000);
+
+        // Click the first visible chat to open ChatActivity
+        onView(FirstViewMatcher.first(allOf(
+                withId(R.id.chatPostId),
+                isDescendantOfA(withId(R.id.messageRecyclerView))
+        ))).perform(click());
+
+        Thread.sleep(2000);
+
+        // Get ChatActivity instance from foreground
+        final ChatActivity[] activityRef = new ChatActivity[1];
+        InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
+            Collection<Activity> activities = ActivityLifecycleMonitorRegistry
+                    .getInstance()
+                    .getActivitiesInStage(Stage.RESUMED);
+            for (Activity activity : activities) {
+                if (activity instanceof ChatActivity) {
+                    activityRef[0] = (ChatActivity) activity;
+                    break;
+                }
+            }
+        });
+
+        ChatActivity activity = activityRef[0];
+        assertNotNull("ChatActivity not found", activity);
+
+        // Simulate sending image from drawable using real chatId
+        Uri testImageUri = Uri.parse("android.resource://" + activity.getPackageName() + "/" + R.drawable.test_image);
+        activity.uploadImageToImgur(testImageUri);
+
+        Thread.sleep(5000); // Wait for upload + Firestore write
+
+        // Verify image is shown in chat
+        onView(withId(R.id.chatRecyclerView))
+                .check(matches(hasDescendant(withContentDescription("chat_image"))));
+        onView(withId(R.id.chatRecyclerView)).check(matches(hasDescendant(withContentDescription("chat_image"))));
+    }
+
+
+
+    @Test
+    public void C5testMessagingViewSendDelete() {
+        ActivityScenario.launch(LoginActivity.class);
+
+        onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(2000); // Let posts load
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
         onView(withId(R.id.bottom_chat)).perform(click());
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(2000); // Let posts load
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        // Click on first visible chat
-        onView(withId(R.id.chatPostId)).perform(click());
+        // Click any visible post title to navigate
+        onView(FirstViewMatcher.first(allOf(
+                withId(R.id.chatPostId),
+                isDescendantOfA(withId(R.id.messageRecyclerView))
+        ))).perform(click());
+
+
+
+        // Step 1: Send a message
+        String testMessage = "Hello Espresso";
+
+        onView(withId(R.id.messageInput)).perform(typeText(testMessage), closeSoftKeyboard());
+        onView(withId(R.id.sendButton)).perform(click());
+
+        // Step 2: Check that the message appears
+        try {
+            Thread.sleep(1500); // wait for Firestore listener to sync
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        onView(withText(testMessage)).check(matches(isDisplayed()));
 
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1500); // wait for Firestore listener to sync
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        // Simulate selecting test image (stored in drawable)
+        onView(withId(R.id.backButton)).perform(click());
 
-        Intent chatIntent = new Intent(ApplicationProvider.getApplicationContext(), ChatActivity.class);
-        chatIntent.putExtra("chatId", "your_test_chat_id");
-        chatIntent.putExtra("founderId", "test_founder_id");
-        chatIntent.putExtra("testMode", true);
-        chatIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        ApplicationProvider.getApplicationContext().startActivity(chatIntent);
+        onView(allOf(withId(R.id.chatPostId)))
+                .perform(ViewActions.swipeLeft());
 
-
-
-        // Wait for message to appear
+        // Wait for animation/deletion
         try {
-            Thread.sleep(3000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        // Check if image message is displayed (assumes image messages show a known placeholder or test link)
-        onView(withId(R.id.chatRecyclerView))
-                .check(matches(hasDescendant(withContentDescription("chat_image"))));
+        // Confirm it's gone
+        onView(withId(R.id.messageTextView)).check(doesNotExist());
 
     }
+
+
 
     @Test
     public void C6testMapSearchCity() {
         ActivityScenario.launch(LoginActivity.class);
 
         // Log in
-        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
-        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
         // Wait for main activity to load
