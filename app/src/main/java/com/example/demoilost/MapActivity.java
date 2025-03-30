@@ -68,7 +68,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         });
 
         searchButton.setOnClickListener(v -> {
-            // 1) Show a dialog for address input
+            // Show a dialog for address input
             AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
             builder.setTitle("Search Location");
 
@@ -76,11 +76,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             input.setHint("Type an address or place");
             builder.setView(input);
 
-            // 2) When user clicks 'Search'
+            // When user clicks 'Search'
             builder.setPositiveButton("Search", (dialog, which) -> {
                 String addressText = input.getText().toString().trim();
                 if (!addressText.isEmpty()) {
-                    // 3) Geocode the user input
+                    // Geocode the user input
                     searchLocationAndZoom(addressText);
                 }
             });

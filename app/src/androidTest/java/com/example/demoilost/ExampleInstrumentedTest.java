@@ -39,10 +39,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.hasErrorText;
 import static androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withClassName;
 import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -117,7 +119,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).perform(click());
 
         try {
-            Thread.sleep(2000); // Wait 3 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -136,7 +138,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).perform(click());
 
         try {
-            Thread.sleep(2000); // Wait 3 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -154,7 +156,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).perform(click());
 
         try {
-            Thread.sleep(2000); // Wait 3 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -173,7 +175,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).perform(click());
 
         try {
-            Thread.sleep(2000); // Wait 3 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -194,7 +196,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).perform(click());
 
         try {
-            Thread.sleep(2000); // Wait 3 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -202,10 +204,6 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
 
-
-    /////////
-
-    // AC001: Register with valid credentials
     @Test
     public void A7testRegisterUserSuccess() {
         ActivityScenario.launch(com.example.demoilost.RegisterActivity.class);
@@ -217,9 +215,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.termsCheckbox)).perform(click());
         onView(withId(R.id.signupButton)).perform(click());
 
-        // TEMP: Wait for transition to LoginActivity
         try {
-            Thread.sleep(2000); // Wait 3 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -238,9 +235,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.termsCheckbox)).perform(click());
         onView(withId(R.id.signupButton)).perform(click());
 
-        // TEMP: Wait for transition to LoginActivity
         try {
-            Thread.sleep(2000); // Wait 3 seconds
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -256,7 +252,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.password)).perform(typeText("wrongpass"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
-        // Wait briefly for UI to respond
+
         try {
             Thread.sleep(2500);
         } catch (InterruptedException e) {
@@ -267,7 +263,6 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
     }
 
-    //AC03
     @Test
     public void B0testLoginEmptyEmail() {
         ActivityScenario.launch(LoginActivity.class);
@@ -302,7 +297,6 @@ public class ExampleInstrumentedTest {
 
 
 
-    // AC002: Login with valid credentials
     @Test
     public void B2testLoginSuccess() {
         ActivityScenario.launch(LoginActivity.class);
@@ -633,7 +627,7 @@ public class ExampleInstrumentedTest {
     }
 
     @Test
-    public void D3testStartChatFromItemListing() {
+    public void C4testStartChatFromItemListing() {
         ActivityScenario.launch(LoginActivity.class);
 
         // Log in
@@ -692,7 +686,7 @@ public class ExampleInstrumentedTest {
     }
 
     @Test
-    public void C3testMessagingSendImage() {
+    public void C5testMessagingSendImage() {
         ActivityScenario.launch(LoginActivity.class);
 
         // Log in
@@ -744,6 +738,45 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.chatRecyclerView))
                 .check(matches(hasDescendant(withContentDescription("chat_image"))));
 
+    }
+
+    @Test
+    public void C6testMapSearchCity() {
+        ActivityScenario.launch(LoginActivity.class);
+
+        // Log in
+        onView(withId(R.id.email)).perform(typeText("test@example.com"), closeSoftKeyboard());
+        onView(withId(R.id.password)).perform(typeText("testpass123"), closeSoftKeyboard());
+        onView(withId(R.id.loginButton)).perform(click());
+
+        // Wait for main activity to load
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Type city name in search input
+        onView(withId(R.id.search_location_button)).perform(click());
+
+        // Click search button
+        // Type in city name in the dialog input
+        onView(withClassName(containsString("EditText")))
+                .perform(typeText("Paris"), closeSoftKeyboard());
+
+// Click the "Search" button
+        onView(withText("Search")).perform(click());
+
+
+        // Wait for map to update
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // Check if map shows city result - assume you set a marker or update a text view
+        onView(withText(containsString("Paris"))).check(matches(isDisplayed()));
     }
 
 

@@ -87,13 +87,13 @@ public class SettingsActivity extends AppCompatActivity {
         TextView rowPrivacy = findViewById(R.id.rowPrivacy).findViewById(R.id.settingLabel);
         TextView rowLogout = findViewById(R.id.rowLogout).findViewById(R.id.settingLabel);
 
-    // Set labels
+        // Set labels
         rowMyPosts.setText("My Posts");
         rowManageAccount.setText("Manage Account");
         rowPrivacy.setText("Privacy & Security");
         rowLogout.setText("Log Out");
 
-    // Set click actions
+        // Set click actions
         findViewById(R.id.rowMyPosts).setOnClickListener(v -> {
             startActivity(new Intent(this, MyPostsActivity.class));
         });

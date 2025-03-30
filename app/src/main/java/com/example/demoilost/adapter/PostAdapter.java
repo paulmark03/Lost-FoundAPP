@@ -69,7 +69,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.PostViewHolder
                 intent.putExtra("longitude", geo.getLongitude());
             }
 
-            // 🔥 Pass critical values
+            // Pass critical values
             intent.putExtra("postId", post.getPostId() != null ? post.getPostId() : "");
             intent.putExtra("founderId", post.getPosterId() != null ? post.getPosterId() : "");
 

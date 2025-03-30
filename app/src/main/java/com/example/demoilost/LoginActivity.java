@@ -31,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     private EditText emailInput, passwordInput;
     private TextView forgotPassword, registerNow;
     private Button loginButton;
-    private FirebaseAuth auth; // Firebase Authentication instance
+    private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,11 +50,7 @@ public class LoginActivity extends AppCompatActivity {
 
         // Enable edge-to-edge UI
         EdgeToEdge.enable(this);
-//        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-//            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-//            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-//            return insets;
-//        });
+
 
         forgotPassword.setOnClickListener(v -> {
             // Show a dialog to collect the user's email

@@ -47,8 +47,6 @@ public class InboxActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
 
-        //migrateChatDocuments();
-
         fixChatsFromSenderId();
 
         messageRecyclerView = findViewById(R.id.messageRecyclerView);
@@ -187,47 +185,6 @@ public class InboxActivity extends AppCompatActivity {
         }
         return false;
     }
-
-
-    //Merge firestore
-//    private void migrateChatDocuments() {
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//
-//        db.collection("chats")
-//                .get()
-//                .addOnSuccessListener(querySnapshots -> {
-//                    for (DocumentSnapshot doc : querySnapshots) {
-//                        String docId = doc.getId();
-//                        String chatId = doc.getString("chatId");
-//                        String founderId = doc.getString("founderId");
-//                        String userId = doc.getString("userId");
-//
-//                        // Build fields that are missing
-//                        Map<String, Object> updates = new HashMap<>();
-//
-//                        if (chatId == null) updates.put("chatId", docId);
-//
-//                        // Optional hardcoded fallback if you can detect who is missing
-//                        if (founderId == null) updates.put("founderId", "UNKNOWN_FOUNDER");
-//                        if (userId == null) updates.put("userId", "UNKNOWN_USER");
-//
-//                        if (!updates.isEmpty()) {
-//                            db.collection("chats")
-//                                    .document(docId)
-//                                    .set(updates, SetOptions.merge())
-//                                    .addOnSuccessListener(aVoid ->
-//                                            Log.d("Migration", "Updated chat " + docId)
-//                                    )
-//                                    .addOnFailureListener(e ->
-//                                            Log.e("Migration", "Failed to update " + docId, e)
-//                                    );
-//                        }
-//                    }
-//                })
-//                .addOnFailureListener(e ->
-//                        Log.e("Migration", "Failed to fetch chats", e)
-//                );
-//    }
 
     private void fixChatsFromSenderId() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
