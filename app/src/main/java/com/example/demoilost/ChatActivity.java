@@ -61,8 +61,8 @@ public class ChatActivity extends AppCompatActivity {
     private FirebaseFirestore firestore;
     private String chatId;
     private String founderId;
-
     private Uri cameraImageUri;
+    private String chat = "chats";
 
     // Gallery image picker
     private final ActivityResultLauncher<Intent> imagePickerLauncher =
@@ -99,64 +99,58 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
 
         isTestMode = getIntent().getBooleanExtra("testMode", false);
+        if (isTestMode) testSendImageFromDrawable();
 
-        if (isTestMode) {
-            testSendImageFromDrawable();
-        }
-        // Init views
+        initViews();
+        setupChatHeader();
+        setupRecyclerView();
+        listenForMessages();
+        setupSendTextHandler();
+        setupSendImageHandler();
+    }
+
+    private void initViews() {
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
         inputMessage = findViewById(R.id.messageInput);
         sendButton = findViewById(R.id.sendButton);
-        imageButton = findViewById(R.id.imageButton); // Add to layout
-        TextView chatHeader = findViewById(R.id.chatHeader);
-
-        messagesList = new ArrayList<>();
+        imageButton = findViewById(R.id.imageButton);
         firestore = FirebaseFirestore.getInstance();
 
         chatId = getIntent().getStringExtra("chatId");
         founderId = getIntent().getStringExtra("founderId");
 
-        ImageView backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> finish());
+        findViewById(R.id.backButton).setOnClickListener(v -> finish());
+    }
 
-
+    private void setupChatHeader() {
+        TextView chatHeader = findViewById(R.id.chatHeader);
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        firestore.collection("chats")
-                .document(chatId)
-                .get()
+        firestore.collection(chat).document(chatId).get()
                 .addOnSuccessListener(chatDoc -> {
-                    if (chatDoc.exists()) {
-                        String userId = chatDoc.getString("userId");
-                        String founderIdInChat = chatDoc.getString("founderId");
+                    if (!chatDoc.exists()) return;
+                    String userId = chatDoc.getString("userId");
+                    String founderInChat = chatDoc.getString("founderId");
+                    String otherUserId = currentUserId.equals(userId) ? founderInChat : userId;
 
-                        String otherUserId = currentUserId.equals(userId) ? founderIdInChat : userId;
-
-                        firestore.collection("users")
-                                .document(otherUserId)
-                                .get()
-                                .addOnSuccessListener(userDoc -> {
-                                    String name = userDoc.getString("name");
-                                    if (chatHeader != null) {
-                                        chatHeader.setText("Chat with: " + (name != null ? name : otherUserId));
-                                    }
-                                })
-                                .addOnFailureListener(e -> {
-                                    if (chatHeader != null) {
-                                        chatHeader.setText("Chat with: " + otherUserId);
-                                    }
-                                });
-                    }
+                    firestore.collection("users").document(otherUserId).get()
+                            .addOnSuccessListener(userDoc -> {
+                                String name = userDoc.getString("name");
+                                chatHeader.setText("Chat with: " + (name != null ? name : otherUserId));
+                            })
+                            .addOnFailureListener(e -> chatHeader.setText("Chat with: " + otherUserId));
                 });
+    }
 
-
-        // Setup RecyclerView
+    private void setupRecyclerView() {
+        messagesList = new ArrayList<>();
         chatAdapter = new ChatAdapter(messagesList);
         chatRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         chatRecyclerView.setAdapter(chatAdapter);
+    }
 
-        // Listen for messages
-        firestore.collection("chats")
+    private void listenForMessages() {
+        firestore.collection(chat)
                 .document(chatId)
                 .collection("messages")
                 .orderBy("timestamp", Query.Direction.ASCENDING)
@@ -167,58 +161,50 @@ public class ChatActivity extends AppCompatActivity {
                     }
                     messagesList.clear();
                     for (DocumentSnapshot doc : snapshots.getDocuments()) {
-                        Message message = doc.toObject(Message.class);
-                        messagesList.add(message);
+                        messagesList.add(doc.toObject(Message.class));
                     }
                     chatAdapter.notifyDataSetChanged();
                     chatRecyclerView.scrollToPosition(messagesList.size() - 1);
                 });
+    }
 
-        // Send Text Message
+    private void setupSendTextHandler() {
         sendButton.setOnClickListener(v -> {
             String messageText = inputMessage.getText().toString().trim();
             if (!messageText.isEmpty()) {
                 Message message = new Message(
                         FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                        messageText,
-                        null,
-                        "text",
-                        new Date()
-                );
+                        messageText, null, "text", new Date());
                 sendMessageToFirestore(message);
                 inputMessage.setText("");
             }
         });
+    }
 
-        // Send Image Message
+    private void setupSendImageHandler() {
         imageButton.setOnClickListener(v -> {
             String[] options = {"Choose from Gallery", "Take Photo"};
             new android.app.AlertDialog.Builder(ChatActivity.this)
                     .setTitle("Send Photo")
                     .setItems(options, (dialog, which) -> {
                         if (which == 0) {
-                            // Gallery
                             Intent intent = new Intent(Intent.ACTION_PICK);
                             intent.setType("image/*");
                             imagePickerLauncher.launch(intent);
                         } else {
-                            // Camera
-                            File photoFile = new File(getCacheDir(), "captured_image_" + System.currentTimeMillis() + ".jpg");
+                            File photoFile = new File(getCacheDir(), "captured_" + System.currentTimeMillis() + ".jpg");
                             cameraImageUri = FileProvider.getUriForFile(
-                                    ChatActivity.this,
-                                    getPackageName() + ".provider",
-                                    photoFile
-                            );
+                                    ChatActivity.this, getPackageName() + ".provider", photoFile);
                             cameraLauncher.launch(cameraImageUri);
                         }
                     })
                     .show();
         });
-
     }
 
+
     private void sendMessageToFirestore(Message message) {
-        firestore.collection("chats")
+        firestore.collection(chat)
                 .document(chatId)
                 .collection("messages")
                 .add(message)
