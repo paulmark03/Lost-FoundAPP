@@ -144,10 +144,11 @@ public class PostActivity extends AppCompatActivity {
             }
         });
 
+        String apiKey = BuildConfig.PLACES_API_KEY;
 
 
         if (!Places.isInitialized()) {
-            Places.initialize(getApplicationContext(), "AIzaSyAxay_dovw88a_M3TvSTbL2q_YPbOCYlJA");
+            Places.initialize(getApplicationContext(), apiKey);
         }
     }
 

@@ -1,11 +1,21 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
 }
 
+val localProperties = Properties().apply {
+    load(FileInputStream(rootProject.file("local.properties")))
+}
+val apiKey = localProperties.getProperty("google.places.api.key") ?: ""
+
 android {
     namespace = "com.example.demoilost"
     compileSdk = 35
+    android.buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.example.demoilost"
@@ -14,6 +24,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        buildConfigField("String", "PLACES_API_KEY", "\"${apiKey}\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -62,6 +73,10 @@ dependencies {
     implementation (libs.commons.io)
     androidTestImplementation(libs.espresso.intents)
 }
+
+
+
+
 
 configurations.all {
     resolutionStrategy {
