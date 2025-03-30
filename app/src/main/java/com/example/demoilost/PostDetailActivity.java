@@ -34,8 +34,8 @@ public class PostDetailActivity extends AppCompatActivity {
     private String description;
     private String imageUrl;
     private String address;
-    private String postid = "postId";
-    private String founderid = "founderId";
+    private String postIdText = "postId";
+    private String founderIdText = "founderId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +75,8 @@ public class PostDetailActivity extends AppCompatActivity {
         title = intent.getStringExtra("title");
         description = intent.getStringExtra("description");
         imageUrl = intent.getStringExtra("imageUrl");
-        postId = intent.getStringExtra(postid);
-        founderId = intent.getStringExtra(founderid);
+        postId = intent.getStringExtra(postIdText);
+        founderId = intent.getStringExtra(founderIdText);
         address = intent.getStringExtra("address");
 
         // Fallback to lat/lng if address is null
@@ -112,8 +112,8 @@ public class PostDetailActivity extends AppCompatActivity {
 
         Map<String, Object> chatData = new HashMap<>();
         chatData.put("chatId", chatId);
-        chatData.put(postid, postId);
-        chatData.put(founderid, founderId);
+        chatData.put(postIdText, postId);
+        chatData.put(founderIdText, founderId);
         chatData.put("userId", currentUserId);
         chatData.put("participants", Arrays.asList(founderId, currentUserId));
         chatData.put("createdAt", FieldValue.serverTimestamp());
@@ -124,8 +124,8 @@ public class PostDetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(aVoid -> {
                     Intent chatIntent = new Intent(PostDetailActivity.this, ChatActivity.class);
                     chatIntent.putExtra("chatId", chatId);
-                    chatIntent.putExtra(founderid, founderId);
-                    chatIntent.putExtra(postid, postId);
+                    chatIntent.putExtra(founderIdText, founderId);
+                    chatIntent.putExtra(postIdText, postId);
                     startActivity(chatIntent);
                 })
                 .addOnFailureListener(e ->
