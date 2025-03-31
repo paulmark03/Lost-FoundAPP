@@ -109,6 +109,7 @@ public class ExampleInstrumentedTest {
     }
 
 
+    //AC008
     @Test
     public void A2testRegisterEmptyPassword() {
         ActivityScenario.launch(RegisterActivity.class);
@@ -127,6 +128,7 @@ public class ExampleInstrumentedTest {
 
     }
 
+    //AC008
     @Test
     public void A3testRegisterEmptyName() {
         ActivityScenario.launch(RegisterActivity.class);
@@ -145,6 +147,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
 
+    //AC008
     @Test
     public void A4testRegisterEmptyEmail() {
         ActivityScenario.launch(RegisterActivity.class);
@@ -163,6 +166,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
 
+    //AC008
     @Test
     public void A5testRegisterUncheckedTermsCheckbox() {
         ActivityScenario.launch(RegisterActivity.class);
@@ -183,6 +187,7 @@ public class ExampleInstrumentedTest {
 
     }
 
+    //AC008
     @Test
     public void A6testRegisterInvalidEmail() {
         ActivityScenario.launch(RegisterActivity.class);
@@ -204,6 +209,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
 
+    //AC001
     @Test
     public void A7testRegisterUserSuccess() {
         ActivityScenario.launch(com.example.demoilost.RegisterActivity.class);
@@ -224,6 +230,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
     }
 
+    //AC009
     @Test
     public void A8testRegisterUserEmailUsed() {
         ActivityScenario.launch(com.example.demoilost.RegisterActivity.class);
@@ -244,6 +251,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
 
+    //AC003
     @Test
     public void A9testLoginWrongCredentials() {
         ActivityScenario.launch(LoginActivity.class);
@@ -263,6 +271,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
     }
 
+    //AC003
     @Test
     public void B0testLoginEmptyEmail() {
         ActivityScenario.launch(LoginActivity.class);
@@ -279,6 +288,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.email)).check(matches(hasErrorText("Email cannot be empty")));
     }
 
+    //AC003
     @Test
     public void B1testLoginEmptyPassword() {
         ActivityScenario.launch(LoginActivity.class);
@@ -296,7 +306,7 @@ public class ExampleInstrumentedTest {
     }
 
 
-
+    //AC002
     @Test
     public void B2testLoginSuccess() {
         ActivityScenario.launch(LoginActivity.class);
@@ -315,6 +325,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.map)).check(matches(isDisplayed()));
     }
 
+    //AC005
     @Test
     public void B3testUpdateUserNameSuccess() {
         // Launch ManageAccountActivity (simulate user already logged in)
@@ -337,6 +348,7 @@ public class ExampleInstrumentedTest {
 
     }
 
+    //LF001
     @Test
     public void B4testCreatePostWithAllDetails() {
         Intents.init();
@@ -366,6 +378,7 @@ public class ExampleInstrumentedTest {
         Intents.release();
     }
 
+    //LF003
     @Test
     public void B5testCreatePostMissingTitle() {
         Intents.init();
@@ -393,6 +406,7 @@ public class ExampleInstrumentedTest {
         Intents.release();
     }
 
+    //LF003
     @Test
     public void B6testCreatePostMissingDescription() {
         Intents.init();
@@ -420,6 +434,7 @@ public class ExampleInstrumentedTest {
         Intents.release();
     }
 
+    //LF003
     @Test
     public void B7testCreatePostMissingLocation() {
         Intents.init();
@@ -447,6 +462,7 @@ public class ExampleInstrumentedTest {
         Intents.release();
     }
 
+    //LF003
     @Test
     public void B8testCreatePostMissingImage() {
         Intents.init();
@@ -472,6 +488,12 @@ public class ExampleInstrumentedTest {
         Intents.release();
     }
 
+    //LF004
+    @Test
+    public void B8testDeletePost() {}
+
+
+    //AC006
     @Test
     public void B9testDeleteAccountFlow() {
 
@@ -492,12 +514,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
     }
 
-
-
-
-
-
-
+    //SR001
     @Test
     public void C0testReportedItemsListViewIsDisplayed() {
         ActivityScenario.launch(SearchActivity.class);
@@ -515,7 +532,7 @@ public class ExampleInstrumentedTest {
     }
 
 
-
+    //SR002
     @Test
     public void C1testDisplayMap() {
         ActivityScenario.launch(MapActivity.class);
@@ -531,6 +548,7 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.map)).check(matches(isDisplayed()));
     }
 
+    //SR003
     @Test
     public void C2testViewItemDetails() {
         ActivityScenario.launch(LoginActivity.class);
@@ -569,7 +587,7 @@ public class ExampleInstrumentedTest {
     }
 
 
-
+    //DM004
     @Test
     public void C3testStartChatFromItemListing() {
         ActivityScenario.launch(LoginActivity.class);
@@ -629,6 +647,7 @@ public class ExampleInstrumentedTest {
         onView(withText(message)).check(matches(isDisplayed()));
     }
 
+    //DM002
     @Test
     public void C4testMessagingSendImage() throws InterruptedException {
         ActivityScenario.launch(LoginActivity.class);
@@ -679,7 +698,7 @@ public class ExampleInstrumentedTest {
     }
 
 
-
+    //DM001
     @Test
     public void C5testMessagingViewSendDelete() {
         ActivityScenario.launch(LoginActivity.class);
@@ -749,7 +768,7 @@ public class ExampleInstrumentedTest {
     }
 
 
-
+    //MP001
     @Test
     public void C6testMapSearchCity() {
         ActivityScenario.launch(LoginActivity.class);
@@ -774,7 +793,7 @@ public class ExampleInstrumentedTest {
         onView(withClassName(containsString("EditText")))
                 .perform(typeText("Paris"), closeSoftKeyboard());
 
-// Click the "Search" button
+        // Click the "Search" button
         onView(withText("Search")).perform(click());
 
 
