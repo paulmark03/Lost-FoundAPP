@@ -27,14 +27,16 @@ import java.util.Map;
 public class ManageAccountActivity extends AppCompatActivity {
 
     private EditText nameEditText;
-    private Button saveButton;
-    private Button deleteButton;
+    private Button saveButton, deleteButton;
     private ImageView backButton;
 
     private FirebaseAuth auth;
-    private FirebaseFirestore db;
     private FirebaseUser currentUser;
-    private String chatString = "chats";
+    private FirebaseFirestore db;
+
+    private static final String CHAT_COLLECTION = "chats";
+    private static final String USERS_COLLECTION = "users";
+    private static final String POSTS_COLLECTION = "posts";
 
     @SuppressLint("WrongViewCast")
     @Override
@@ -43,23 +45,15 @@ public class ManageAccountActivity extends AppCompatActivity {
         setContentView(R.layout.activity_manage_account);
 
         initViews();
+        initFirebase();
 
-        auth = FirebaseAuth.getInstance();
-        db = FirebaseFirestore.getInstance();
-        currentUser = auth.getCurrentUser();
-
-        if (currentUser != null) {
+        if (currentUser != null && currentUser.getDisplayName() != null) {
             nameEditText.setText(currentUser.getDisplayName());
         }
 
         saveButton.setOnClickListener(v -> updateDisplayName());
         deleteButton.setOnClickListener(v -> confirmDelete());
-        backButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            finish();
-        });
+        backButton.setOnClickListener(v -> navigateBack());
     }
 
     private void initViews() {
@@ -67,6 +61,19 @@ public class ManageAccountActivity extends AppCompatActivity {
         saveButton = findViewById(R.id.saveNameButton);
         deleteButton = findViewById(R.id.deleteAccountButton);
         backButton = findViewById(R.id.backButton);
+    }
+
+    private void initFirebase() {
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+        currentUser = auth.getCurrentUser();
+    }
+
+    private void navigateBack() {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        startActivity(intent);
+        finish();
     }
 
     private void updateDisplayName() {
@@ -79,23 +86,25 @@ public class ManageAccountActivity extends AppCompatActivity {
         Map<String, Object> updates = new HashMap<>();
         updates.put("name", newName);
 
-        db.collection("users").document(currentUser.getUid())
+        db.collection(USERS_COLLECTION).document(currentUser.getUid())
                 .set(updates, SetOptions.merge())
-                .addOnSuccessListener(aVoid -> {
-                    currentUser.updateProfile(new UserProfileChangeRequest.Builder()
-                            .setDisplayName(newName).build()
-                    ).addOnCompleteListener(task -> {
-                        if (task.isSuccessful()) {
-                            Toast.makeText(this, "Name updated", Toast.LENGTH_SHORT).show();
-                            setResult(RESULT_OK);
-                            finish();
-                        } else {
-                            Toast.makeText(this, "Failed to update auth profile", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                })
+                .addOnSuccessListener(aVoid -> updateFirebaseUserProfile(newName))
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Failed to update name", Toast.LENGTH_SHORT).show());
+    }
+
+    private void updateFirebaseUserProfile(String newName) {
+        currentUser.updateProfile(
+                new UserProfileChangeRequest.Builder().setDisplayName(newName).build()
+        ).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(this, "Name updated", Toast.LENGTH_SHORT).show();
+                setResult(RESULT_OK);
+                finish();
+            } else {
+                Toast.makeText(this, "Failed to update auth profile", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void confirmDelete() {
@@ -108,17 +117,23 @@ public class ManageAccountActivity extends AppCompatActivity {
     }
 
     private void deleteUserData() {
+        if (currentUser == null) return;
+
         String userId = currentUser.getUid();
 
-        deleteUserPosts(userId, () -> deleteUserChats(userId, () -> deleteUserAndAuth(userId)));
+        deleteUserPosts(userId, () ->
+                deleteUserChats(userId, () ->
+                        deleteUserAndAuth(userId)
+                )
+        );
     }
 
     private void deleteUserPosts(String userId, Runnable onComplete) {
-        db.collection("posts")
+        db.collection(POSTS_COLLECTION)
                 .whereEqualTo("posterId", userId)
                 .get()
                 .addOnSuccessListener(snapshot -> {
-                    for (DocumentSnapshot doc : snapshot) {
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
                         doc.getReference().delete();
                     }
                     onComplete.run();
@@ -130,18 +145,20 @@ public class ManageAccountActivity extends AppCompatActivity {
     private void deleteUserChats(String userId, Runnable onComplete) {
         List<DocumentSnapshot> allChats = new ArrayList<>();
 
-        db.collection(chatString).whereEqualTo("userId", userId).get()
+        db.collection(CHAT_COLLECTION).whereEqualTo("userId", userId).get()
                 .addOnSuccessListener(userChats -> {
                     allChats.addAll(userChats.getDocuments());
 
-                    db.collection(chatString).whereEqualTo("founderId", userId).get()
+                    db.collection(CHAT_COLLECTION).whereEqualTo("founderId", userId).get()
                             .addOnSuccessListener(founderChats -> {
                                 allChats.addAll(founderChats.getDocuments());
 
                                 for (DocumentSnapshot chat : allChats) {
                                     String chatId = chat.getId();
 
-                                    db.collection(chatString).document(chatId).collection("messages").get()
+                                    // Delete messages in subcollection
+                                    db.collection(CHAT_COLLECTION).document(chatId)
+                                            .collection("messages").get()
                                             .addOnSuccessListener(messages -> {
                                                 for (DocumentSnapshot msg : messages.getDocuments()) {
                                                     msg.getReference().delete();
@@ -157,7 +174,7 @@ public class ManageAccountActivity extends AppCompatActivity {
     }
 
     private void deleteUserAndAuth(String userId) {
-        db.collection("users").document(userId).delete();
+        db.collection(USERS_COLLECTION).document(userId).delete();
 
         currentUser.delete()
                 .addOnSuccessListener(unused -> {

@@ -19,13 +19,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.demoilost.model.PostModel;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -37,12 +37,11 @@ import java.util.Locale;
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private GoogleMap myMap;
-    private String mapDebug = "MapDebug";
-    ImageButton searchButton;
-    ImageButton postButton;
-    BottomNavigationView bottomNavigationView;
-    String addressText;
-
+    private static final String TAG = "MapActivity";
+    private ImageButton searchButton;
+    private ImageButton postButton;
+    private BottomNavigationView bottomNavigationView;
+    private TextView currentLocationTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,134 +49,148 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_map);
 
+        setupInsets();
+        initViews();
+        setupMap();
+        setupListeners();
+    }
+
+    private void setupInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        } else {
-            Log.e("MapActivity", "mapFragment is NULL. Check activity_map.xml!");
-        }
+    private void initViews() {
         searchButton = findViewById(R.id.search_location_button);
         postButton = findViewById(R.id.post_button);
         bottomNavigationView = findViewById(R.id.bottom_navigation_view);
+        currentLocationTextView = findViewById(R.id.current_location);
         bottomNavigationView.setSelectedItemId(R.id.bottom_map);
+    }
 
-        postButton.setOnClickListener(v ->{
-            Intent intent = new Intent(MapActivity.this, PostActivity.class);
-            startActivity(intent);
-        });
+    private void setupMap() {
+        SupportMapFragment mapFragment = (SupportMapFragment)
+                getSupportFragmentManager().findFragmentById(R.id.map);
 
-        searchButton.setOnClickListener(v -> {
-            // Show a dialog for address input
-            AlertDialog.Builder builder = new AlertDialog.Builder(MapActivity.this);
-            builder.setTitle("Search Location");
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        } else {
+            Log.e(TAG, "Map fragment is null");
+        }
+    }
 
-            final EditText input = new EditText(MapActivity.this);
-            input.setHint("Type an address or place");
-            builder.setView(input);
+    private void setupListeners() {
+        postButton.setOnClickListener(v -> startActivity(new Intent(this, PostActivity.class)));
 
-            // When user clicks 'Search'
-            builder.setPositiveButton("Search", (dialog, which) -> {
-                addressText = input.getText().toString().trim();
-                if (!addressText.isEmpty()) {
-                    // Geocode the user input
-                    searchLocationAndZoom(addressText);
-                }
-            });
-            builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
-
-            builder.show();
-        });
+        searchButton.setOnClickListener(v -> showSearchDialog());
 
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.bottom_map) {
-                // Already in MapActivity, no action needed
-                return true;
-            } else if (id == R.id.bottom_search) {
-                startActivity(new Intent(MapActivity.this, SearchActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
-                return true;
-            } else if (id == R.id.bottom_settings) {
-                startActivity(new Intent(MapActivity.this, SettingsActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
-                return true;
-            } else if (id == R.id.bottom_chat) {
-                startActivity(new Intent(MapActivity.this, InboxActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
+                // Already on map, do nothing
                 return true;
             }
+
+            if (id == R.id.bottom_search) {
+                navigateTo(SearchActivity.class);
+                return true;
+            }
+
+            if (id == R.id.bottom_settings) {
+                navigateTo(SettingsActivity.class);
+                return true;
+            }
+
+            if (id == R.id.bottom_chat) {
+                navigateTo(InboxActivity.class);
+                return true;
+            }
+
             return false;
         });
+
+    }
+
+    private void showSearchDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Search Location");
+
+        final EditText input = new EditText(this);
+        input.setHint("Type an address or place");
+        builder.setView(input);
+
+        builder.setPositiveButton("Search", (dialog, which) -> {
+            String address = input.getText().toString().trim();
+            if (!address.isEmpty()) {
+                searchLocationAndZoom(address);
+            }
+        });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        builder.show();
+    }
+
+    private void navigateTo(Class<?> target) {
+        startActivity(new Intent(this, target));
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+        finish();
     }
 
     private void searchLocationAndZoom(String addressText) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-        TextView currentLocationTextView = findViewById(R.id.current_location);
 
         try {
             List<Address> addresses = geocoder.getFromLocationName(addressText, 1);
             if (addresses != null && !addresses.isEmpty()) {
                 Address address = addresses.get(0);
+                LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-                double lat = address.getLatitude();
-                double lng = address.getLongitude();
-                LatLng latLng = new LatLng(lat, lng);
-
-                // Move and zoom the map
                 myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
-
                 currentLocationTextView.setText(addressText);
-
             } else {
-                Toast.makeText(this, "No location found for: " + addressText, Toast.LENGTH_SHORT).show();
+                showToast("No location found for: " + addressText);
             }
         } catch (IOException e) {
-            Toast.makeText(this, "Geocoder error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
+            Log.e(TAG, "Geocoder error", e);
+            showToast("Error finding location: " + e.getMessage());
         }
     }
-
-
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
         myMap = googleMap;
         myMap.getUiSettings().setZoomGesturesEnabled(true);
-        Log.d(mapDebug, "Map is ready");
+        loadPostMarkers();
+    }
 
+    private void loadPostMarkers() {
         FirebaseFirestore.getInstance().collection("posts")
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    Log.d(mapDebug, "Loaded posts: " + queryDocumentSnapshots.size());
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
                         try {
                             PostModel post = doc.toObject(PostModel.class);
-                            GeoPoint geo = post.getLocation();
-                            if (geo != null) {
-                                LatLng latLng = new LatLng(geo.getLatitude(), geo.getLongitude());
+                            GeoPoint location = post.getLocation();
+                            if (location != null) {
+                                LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                                 myMap.addMarker(new MarkerOptions()
                                         .position(latLng)
                                         .title(post.getTitle())
-                                        .snippet(post.getDescription()));                                Log.d(mapDebug, "Marker added: " + latLng);
-                            } else {
-                                Log.w(mapDebug, "Post missing GeoPoint: " + doc.getId());
+                                        .snippet(post.getDescription()));
                             }
                         } catch (Exception e) {
-                            Log.e(mapDebug, "Error parsing post", e);
+                            Log.e(TAG, "Error displaying marker", e);
                         }
                     }
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(mapDebug, "Failed to load posts", e);
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "Failed to fetch posts", e));
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 }

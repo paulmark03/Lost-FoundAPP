@@ -37,15 +37,11 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import android.widget.LinearLayout;
-
-
 
 
 public class SettingsActivity extends AppCompatActivity {
 
     TextView profileName;
-    TextView username;
     ImageView profileIcon;
 
     //Image URI
@@ -77,7 +73,6 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Link views to XML
         profileName = findViewById(R.id.profileName);
-        username = findViewById(R.id.username);
         profileIcon = findViewById(R.id.profileIcon);
 
         loadUserProfile(); //  Load user info from Firebase
@@ -206,7 +201,6 @@ public class SettingsActivity extends AppCompatActivity {
                         String photoUrl = document.getString("photoUrl");
 
                         profileName.setText(name != null ? name : "No Name");
-                        username.setText(email != null ? "@" + email.split("@")[0] : "unknown");
 
                         if (photoUrl != null && !photoUrl.isEmpty()) {
                             Glide.with(this)
@@ -228,7 +222,7 @@ public class SettingsActivity extends AppCompatActivity {
 
 
 
-    private void updateAuthProfilePicture(String imageUrl) {
+    private void updateProfilePicture(String imageUrl) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if (user != null) {
@@ -289,7 +283,7 @@ public class SettingsActivity extends AppCompatActivity {
                             JSONObject jsonObject = new JSONObject(json);
                             String imageUrl = jsonObject.getJSONObject("data").getString("link");
 
-                            runOnUiThread(() -> updateAuthProfilePicture(imageUrl)); //Upload to Firebase Auth
+                            runOnUiThread(() -> updateProfilePicture(imageUrl)); //Upload to Firebase Auth
                         } catch (JSONException e) {
                             runOnUiThread(() ->
                                     Toast.makeText(SettingsActivity.this, "Failed to parse Imgur response", Toast.LENGTH_SHORT).show());

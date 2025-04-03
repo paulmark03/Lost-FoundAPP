@@ -26,54 +26,56 @@ import java.util.List;
 
 public class MyPostsActivity extends AppCompatActivity {
 
-    private RecyclerView myPostsRecyclerView;
+    private RecyclerView postsRecyclerView;
     private PostAdapter postAdapter;
-    private final List<PostModel> myPostList = new ArrayList<>();
+    private final List<PostModel> postList = new ArrayList<>();
     private String currentUserId;
+    private FirebaseFirestore firestore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_posts);
 
-        // Setup RecyclerView
-        myPostsRecyclerView = findViewById(R.id.myPostsRecyclerView);
-        myPostsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        postAdapter = new PostAdapter(this, myPostList);
-        myPostsRecyclerView.setAdapter(postAdapter);
-
-        // Get current user ID
-        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        // Fetch user-specific posts
-        fetchMyPosts();
-
-        // Handle back button
-        ImageView backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> finish());
-
-        // Enable swipe to delete
-        initSwipeToDelete();
+        initViews();
+        setupRecyclerView();
+        setupSwipeToDelete();
+        fetchPosts();
     }
 
-    private void fetchMyPosts() {
-        FirebaseFirestore.getInstance().collection("posts")
+    private void initViews() {
+        postsRecyclerView = findViewById(R.id.myPostsRecyclerView);
+        firestore = FirebaseFirestore.getInstance();
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        ImageView backButton = findViewById(R.id.backButton);
+        backButton.setOnClickListener(v -> finish());
+    }
+
+    private void setupRecyclerView() {
+        postAdapter = new PostAdapter(this, postList);
+        postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        postsRecyclerView.setAdapter(postAdapter);
+    }
+
+    private void fetchPosts() {
+        firestore.collection("posts")
                 .whereEqualTo("posterId", currentUserId)
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
-                    myPostList.clear();
+                    postList.clear();
                     for (QueryDocumentSnapshot doc : querySnapshot) {
                         PostModel post = doc.toObject(PostModel.class);
                         post.setPostId(doc.getId());
-                        myPostList.add(post);
+                        postList.add(post);
                     }
                     postAdapter.notifyDataSetChanged();
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(this, "Failed to load posts: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                        showToast("Failed to load posts: " + e.getMessage()));
     }
 
-    private void initSwipeToDelete() {
+    private void setupSwipeToDelete() {
         ItemTouchHelper.SimpleCallback swipeCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             @Override
             public boolean onMove(RecyclerView rv, RecyclerView.ViewHolder vh, RecyclerView.ViewHolder target) {
@@ -83,54 +85,52 @@ public class MyPostsActivity extends AppCompatActivity {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
-                PostModel post = myPostList.get(position);
+                PostModel post = postList.get(position);
 
-                FirebaseFirestore.getInstance().collection("posts")
-                        .document(post.getPostId())
+                firestore.collection("posts").document(post.getPostId())
                         .delete()
                         .addOnSuccessListener(unused -> {
-                            myPostList.remove(position);
+                            postList.remove(position);
                             postAdapter.notifyItemRemoved(position);
-                            Toast.makeText(MyPostsActivity.this, "Post deleted", Toast.LENGTH_SHORT).show();
+                            showToast("Post deleted");
                         })
                         .addOnFailureListener(e -> {
-                            Toast.makeText(MyPostsActivity.this, "Delete failed", Toast.LENGTH_SHORT).show();
+                            showToast("Delete failed: " + e.getMessage());
                             postAdapter.notifyItemChanged(position); // Revert swipe
                         });
             }
 
             @Override
-            public void onChildDraw(Canvas c, RecyclerView recyclerView,
-                                    RecyclerView.ViewHolder viewHolder,
-                                    float dX, float dY,
-                                    int actionState, boolean isCurrentlyActive) {
-                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
-
-                View itemView = viewHolder.itemView;
-                Paint paint = new Paint();
-                paint.setColor(Color.parseColor("#FF4444")); // red
-
-                Drawable icon = ContextCompat.getDrawable(MyPostsActivity.this, R.drawable.ic_trash); // your trash icon
-                int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
-
-                // Draw red background
-                if (dX < 0) { // swiping left
-                    c.drawRect((float) itemView.getRight() + dX, (float) itemView.getTop(),
-                            (float) itemView.getRight(), (float) itemView.getBottom(), paint);
-
-                    // Draw trash icon
-                    int iconLeft = itemView.getRight() - iconMargin - icon.getIntrinsicWidth();
-                    int iconRight = itemView.getRight() - iconMargin;
-                    int iconTop = itemView.getTop() + iconMargin;
-                    int iconBottom = iconTop + icon.getIntrinsicHeight();
-
-                    icon.setBounds(iconLeft, iconTop, iconRight, iconBottom);
-                    icon.draw(c);
-                }
+            public void onChildDraw(Canvas c, RecyclerView rv, RecyclerView.ViewHolder vh, float dX, float dY, int actionState, boolean isActive) {
+                drawDeleteBackground(c, vh.itemView, dX);
+                super.onChildDraw(c, rv, vh, dX, dY, actionState, isActive);
             }
         };
 
-        new ItemTouchHelper(swipeCallback).attachToRecyclerView(myPostsRecyclerView);
+        new ItemTouchHelper(swipeCallback).attachToRecyclerView(postsRecyclerView);
     }
 
+    private void drawDeleteBackground(Canvas c, View itemView, float dX) {
+        if (dX >= 0) return;
+
+        Paint paint = new Paint();
+        paint.setColor(Color.RED);
+        c.drawRect(itemView.getRight() + dX, itemView.getTop(), itemView.getRight(), itemView.getBottom(), paint);
+
+        Drawable icon = ContextCompat.getDrawable(this, R.drawable.ic_trash);
+        if (icon == null) return;
+
+        int margin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+        int left = itemView.getRight() - margin - icon.getIntrinsicWidth();
+        int top = itemView.getTop() + margin;
+        int right = itemView.getRight() - margin;
+        int bottom = top + icon.getIntrinsicHeight();
+
+        icon.setBounds(left, top, right, bottom);
+        icon.draw(c);
+    }
+
+    private void showToast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
 }
