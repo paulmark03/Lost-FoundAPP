@@ -1,5 +1,7 @@
 package com.example.demoilost.model;
 
+import com.google.firebase.firestore.ServerTimestamp;
+
 import java.util.Date;
 
 public class Message {
@@ -7,7 +9,9 @@ public class Message {
     private String text;           // Optional (for text messages)
     private String imageUrl;       // Optional (for image messages)
     private String messageType;    // "text", "image"
+    @ServerTimestamp
     private Date timestamp;
+
 
     // Required for Firestore
     public Message() {}

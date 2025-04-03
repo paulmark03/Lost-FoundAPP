@@ -174,7 +174,7 @@ public class ChatActivity extends AppCompatActivity {
             if (!messageText.isEmpty()) {
                 Message message = new Message(
                         FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                        messageText, null, "text", new Date());
+                        messageText, null, "text", null);
                 sendMessageToFirestore(message);
                 inputMessage.setText("");
             }
@@ -204,6 +204,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
     private void sendMessageToFirestore(Message message) {
+
         firestore.collection(chat)
                 .document(chatId)
                 .collection("messages")
@@ -260,7 +261,7 @@ public class ChatActivity extends AppCompatActivity {
                                     null,
                                     imageUrl,
                                     "image",
-                                    new Date()
+                                    null
                             );
 
                             runOnUiThread(() -> sendMessageToFirestore(message));
