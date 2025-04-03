@@ -27,12 +27,14 @@ import java.util.Map;
 public class ManageAccountActivity extends AppCompatActivity {
 
     private EditText nameEditText;
-    private Button saveButton, deleteButton;
+    private Button saveButton;
+    private Button deleteButton;
     private ImageView backButton;
 
     private FirebaseAuth auth;
     private FirebaseFirestore db;
     private FirebaseUser currentUser;
+    private String chatString = "chats";
 
     @SuppressLint("WrongViewCast")
     @Override
@@ -128,18 +130,18 @@ public class ManageAccountActivity extends AppCompatActivity {
     private void deleteUserChats(String userId, Runnable onComplete) {
         List<DocumentSnapshot> allChats = new ArrayList<>();
 
-        db.collection("chats").whereEqualTo("userId", userId).get()
+        db.collection(chatString).whereEqualTo("userId", userId).get()
                 .addOnSuccessListener(userChats -> {
                     allChats.addAll(userChats.getDocuments());
 
-                    db.collection("chats").whereEqualTo("founderId", userId).get()
+                    db.collection(chatString).whereEqualTo("founderId", userId).get()
                             .addOnSuccessListener(founderChats -> {
                                 allChats.addAll(founderChats.getDocuments());
 
                                 for (DocumentSnapshot chat : allChats) {
                                     String chatId = chat.getId();
 
-                                    db.collection("chats").document(chatId).collection("messages").get()
+                                    db.collection(chatString).document(chatId).collection("messages").get()
                                             .addOnSuccessListener(messages -> {
                                                 for (DocumentSnapshot msg : messages.getDocuments()) {
                                                     msg.getReference().delete();
