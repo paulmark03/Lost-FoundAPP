@@ -64,16 +64,23 @@ public class SettingsActivity extends AppCompatActivity {
         ImageView editIcon = findViewById(R.id.editIcon);
         editIcon.setOnClickListener(v -> pickImage());
 
-        findViewById(R.id.rowMyPosts).setOnClickListener(v -> startActivity(new Intent(this, MyPostsActivity.class)));
+        // Dynamically set labels
+        ((TextView) findViewById(R.id.rowMyPosts).findViewById(R.id.settingLabel)).setText("My Posts");
+        ((TextView) findViewById(R.id.rowManageAccount).findViewById(R.id.settingLabel)).setText("Manage Account");
+        ((TextView) findViewById(R.id.rowPrivacy).findViewById(R.id.settingLabel)).setText("Privacy & Security");
+        ((TextView) findViewById(R.id.rowLogout).findViewById(R.id.settingLabel)).setText("Log Out");
+
+        // Click actions
+        findViewById(R.id.rowMyPosts).setOnClickListener(v ->
+                startActivity(new Intent(this, MyPostsActivity.class)));
 
         ActivityResultLauncher<Intent> manageAccountLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
-                        loadUserProfile(); // refresh if name changed
+                        loadUserProfile();
                     }
-                }
-        );
+                });
 
         findViewById(R.id.rowManageAccount).setOnClickListener(v -> {
             Intent intent = new Intent(this, ManageAccountActivity.class);
@@ -85,8 +92,7 @@ public class SettingsActivity extends AppCompatActivity {
                         .setTitle("Privacy & Security")
                         .setMessage("We respect your privacy. Your information is only used for authentication and communication between users.")
                         .setPositiveButton("OK", null)
-                        .show()
-        );
+                        .show());
 
         findViewById(R.id.rowLogout).setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();

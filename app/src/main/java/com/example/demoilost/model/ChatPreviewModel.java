@@ -6,7 +6,7 @@ public class ChatPreviewModel {
     private String postId;
     private String founderId;
     private String userId;
-    private String lastMessage; // ✅ ADD THIS
+    private String lastMessage;
 
     // Empty constructor for Firestore
     public ChatPreviewModel() {
@@ -47,11 +47,11 @@ public class ChatPreviewModel {
         this.userId = userId;
     }
 
-    public String getLastMessage() {   // ✅ GETTER
+    public String getLastMessage() {
         return lastMessage;
     }
 
-    public void setLastMessage(String lastMessage) { // ✅ SETTER
+    public void setLastMessage(String lastMessage) {
         this.lastMessage = lastMessage;
     }
 }
