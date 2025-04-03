@@ -38,6 +38,11 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private GoogleMap myMap;
     private String mapDebug = "MapDebug";
+    ImageButton searchButton;
+    ImageButton postButton;
+    BottomNavigationView bottomNavigationView;
+    String addressText;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +62,9 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         } else {
             Log.e("MapActivity", "mapFragment is NULL. Check activity_map.xml!");
         }
-        ImageButton searchButton = findViewById(R.id.search_location_button);
-        ImageButton postButton = findViewById(R.id.post_button);
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
+        searchButton = findViewById(R.id.search_location_button);
+        postButton = findViewById(R.id.post_button);
+        bottomNavigationView = findViewById(R.id.bottom_navigation_view);
         bottomNavigationView.setSelectedItemId(R.id.bottom_map);
 
         postButton.setOnClickListener(v ->{
@@ -78,7 +83,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
             // When user clicks 'Search'
             builder.setPositiveButton("Search", (dialog, which) -> {
-                String addressText = input.getText().toString().trim();
+                addressText = input.getText().toString().trim();
                 if (!addressText.isEmpty()) {
                     // Geocode the user input
                     searchLocationAndZoom(addressText);
