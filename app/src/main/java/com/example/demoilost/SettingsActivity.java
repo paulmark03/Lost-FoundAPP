@@ -37,20 +37,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-<<<<<<< Updated upstream
-
 
 public class SettingsActivity extends AppCompatActivity {
 
-    TextView profileName;
-    ImageView profileIcon;
-
-    //Image URI
-=======
-
-public class SettingsActivity extends AppCompatActivity {
-
->>>>>>> Stashed changes
     private static final int PICK_IMAGE_REQUEST = 1;
 
     private TextView profileName;
@@ -168,42 +157,7 @@ public class SettingsActivity extends AppCompatActivity {
                         Toast.makeText(this, "Failed to load profile", Toast.LENGTH_SHORT).show());
     }
 
-<<<<<<< Updated upstream
-
-
-
-
-    private void updateProfilePicture(String imageUrl) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-
-        if (user != null) {
-            // Update Firebase Auth (optional if no longer needed)
-            UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
-                    .setPhotoUri(Uri.parse(imageUrl))
-                    .build();
-
-            user.updateProfile(profileUpdates);
-
-            // 🔥 Update Firestore
-            FirebaseFirestore.getInstance()
-                    .collection("users")
-                    .document(user.getUid())
-                    .update("photoUrl", imageUrl)
-                    .addOnSuccessListener(aVoid ->
-                            Toast.makeText(this, "Profile picture updated!", Toast.LENGTH_SHORT).show()
-                    )
-                    .addOnFailureListener(e ->
-                            Toast.makeText(this, "Failed to update Firestore: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                    );
-        }
-    }
-
-
-
-    private void uploadToImgur(Uri imageUri) {
-=======
     private void uploadToImgur(Uri uri) {
->>>>>>> Stashed changes
         try {
             InputStream inputStream = getContentResolver().openInputStream(uri);
             byte[] imageBytes = IOUtils.toByteArray(inputStream);
@@ -226,16 +180,9 @@ public class SettingsActivity extends AppCompatActivity {
                 @Override public void onResponse(Call call, Response response) throws IOException {
                     if (response.isSuccessful()) {
                         try {
-<<<<<<< Updated upstream
-                            JSONObject jsonObject = new JSONObject(json);
-                            String imageUrl = jsonObject.getJSONObject("data").getString("link");
-
-                            runOnUiThread(() -> updateProfilePicture(imageUrl)); //Upload to Firebase Auth
-=======
                             JSONObject json = new JSONObject(response.body().string());
                             String imageUrl = json.getJSONObject("data").getString("link");
                             runOnUiThread(() -> updateProfilePicture(imageUrl));
->>>>>>> Stashed changes
                         } catch (JSONException e) {
                             runOnUiThread(() ->
                                     Toast.makeText(SettingsActivity.this, "Failed to parse image URL", Toast.LENGTH_SHORT).show());
