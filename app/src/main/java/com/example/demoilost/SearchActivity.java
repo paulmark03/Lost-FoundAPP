@@ -21,17 +21,19 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
 
+    private static final String POSTS_COLLECTION = "posts";
+
     private RecyclerView postsRecyclerView;
+    private EditText searchInput;
     private PostAdapter postAdapter;
-    private List<PostModel> postList;
-    private String posts = "posts";
+    private List<PostModel> fullPostList = new ArrayList<>();
+    private List<PostModel> filteredPostList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,127 +41,107 @@ public class SearchActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_search);
 
+        applyInsets();
+        initializeViews();
+        setupRecyclerView();
+        setupBottomNavigation();
+        setupSearch();
+        loadAllPosts(filteredPostList, postAdapter);
+    }
+
+    private void applyInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation_view);
-        bottomNavigationView.setSelectedItemId(R.id.bottom_search);
+    private void initializeViews() {
+        searchInput = findViewById(R.id.searchInput);
+        postsRecyclerView = findViewById(R.id.postsRecyclerView);
+    }
 
-        bottomNavigationView.setOnItemSelectedListener(item -> {
+    private void setupRecyclerView() {
+        postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        postAdapter = new PostAdapter(this, filteredPostList);
+        postsRecyclerView.setAdapter(postAdapter);
+    }
+
+    private void setupBottomNavigation() {
+        BottomNavigationView nav = findViewById(R.id.bottom_navigation_view);
+        nav.setSelectedItemId(R.id.bottom_search);
+
+        nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.bottom_map) {
-                startActivity(new Intent(SearchActivity.this, MapActivity.class));
-                overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
-                finish();
-                return true;
-            } else if (id == R.id.bottom_search) {
-                return true;
+                startActivity(new Intent(this, MapActivity.class));
             } else if (id == R.id.bottom_settings) {
-                startActivity(new Intent(SearchActivity.this, SettingsActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
-                return true;
+                startActivity(new Intent(this, SettingsActivity.class));
             } else if (id == R.id.bottom_chat) {
-                startActivity(new Intent(SearchActivity.this, InboxActivity.class));
-                overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-                finish();
+                startActivity(new Intent(this, InboxActivity.class));
+            } else {
                 return true;
             }
-            return false;
+            overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
+            finish();
+            return true;
         });
+    }
 
-        postsRecyclerView = findViewById(R.id.postsRecyclerView);
-        postsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        postList = new ArrayList<>();
-        postAdapter = new PostAdapter(this, postList);
-        postsRecyclerView.setAdapter(postAdapter);
-
-        // Fetch data from Firestore
-        FirebaseFirestore.getInstance().collection(posts)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    postList.clear();
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        PostModel post = doc.toObject(PostModel.class);
-                        post.setPostId(doc.getId());  //  Set postId manually!
-                        postList.add(post);
-                    }
-                    postAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(SearchActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
-
-        EditText searchEditText = findViewById(R.id.searchInput);
-        RecyclerView searchRecyclerView = findViewById(R.id.postsRecyclerView);
-        searchRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        List<PostModel> filteredPosts = new ArrayList<>();
-        PostAdapter adapter = new PostAdapter(this, filteredPosts);
-        searchRecyclerView.setAdapter(adapter);
-
-        searchEditText.addTextChangedListener(new TextWatcher() {
+    private void setupSearch() {
+        searchInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // This method is intentionally left empty because we don't need to react
-                // before the text is changed. If needed later, you can implement logic here.
+                // No-op
             }
-
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().trim().isEmpty()) {
-                    loadAllPosts(filteredPosts, adapter);
+                String keyword = s.toString().trim();
+                if (keyword.isEmpty()) {
+                    loadAllPosts(filteredPostList, postAdapter);
                 } else {
-                    searchPosts(s.toString(), filteredPosts, adapter);
+                    searchPosts(keyword, filteredPostList, postAdapter);
                 }
             }
 
-
             @Override
             public void afterTextChanged(Editable s) {
-                // This method is intentionally left blank as we don't need to handle
-                // events after the text has changed.
+                // No-op
             }
         });
-
-        loadAllPosts(filteredPosts, adapter);
-
     }
 
     private void loadAllPosts(List<PostModel> resultList, PostAdapter adapter) {
-        FirebaseFirestore.getInstance().collection(posts)
+        FirebaseFirestore.getInstance().collection(POSTS_COLLECTION)
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+                .addOnSuccessListener(querySnapshots -> {
                     resultList.clear();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                    for (DocumentSnapshot doc : querySnapshots) {
                         PostModel post = doc.toObject(PostModel.class);
                         resultList.add(post);
                     }
                     adapter.notifyDataSetChanged();
-                });
+                })
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-
     private void searchPosts(String keyword, List<PostModel> resultList, PostAdapter adapter) {
-        FirebaseFirestore.getInstance().collection(posts)
+        FirebaseFirestore.getInstance().collection(POSTS_COLLECTION)
                 .orderBy("title")
                 .startAt(keyword)
                 .endAt(keyword + "\uf8ff")
                 .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
+                .addOnSuccessListener(querySnapshots -> {
                     resultList.clear();
-                    for (DocumentSnapshot doc : queryDocumentSnapshots) {
+                    for (DocumentSnapshot doc : querySnapshots) {
                         PostModel post = doc.toObject(PostModel.class);
                         resultList.add(post);
                     }
                     adapter.notifyDataSetChanged();
                 });
     }
-
 }

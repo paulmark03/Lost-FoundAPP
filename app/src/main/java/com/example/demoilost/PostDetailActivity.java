@@ -22,11 +22,10 @@ import java.util.Map;
 
 public class PostDetailActivity extends AppCompatActivity {
 
-    private ImageView detailImageView;
-    private TextView detailTitleTextView;
-    private TextView detailLocationTextView;
-    private TextView detailDescriptionTextView;
+    private ImageView detailImageView, backButton;
+    private TextView detailTitleTextView, detailLocationTextView, detailDescriptionTextView;
     private Button chatButton;
+
     private FirebaseFirestore db;
     private String currentUserId;
     private String founderId;
@@ -36,40 +35,34 @@ public class PostDetailActivity extends AppCompatActivity {
     private String description;
     private String imageUrl;
     private String address;
-    private String postText = "postId";
-    private String founderText = "founderId";
+
+    private static final String POST_ID_KEY = "postId";
+    private static final String FOUNDER_ID_KEY = "founderId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
 
-        db = FirebaseFirestore.getInstance();
-        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        initViews();
+        initializeFirebase();
+        initializeViews();
         extractPostData();
         populateUI();
-
-        // Back button
-        ImageView backButton = findViewById(R.id.backButton);
-        backButton.setOnClickListener(v -> finish());
-
-        // Disable chat if viewing own post
-        if (founderId != null && founderId.equals(currentUserId)) {
-            chatButton.setVisibility(View.GONE);
-        }
-
-        // Chat button
-        chatButton.setOnClickListener(view -> initiateChat());
+        setupListeners();
     }
 
-    private void initViews() {
+    private void initializeFirebase() {
+        db = FirebaseFirestore.getInstance();
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+    }
+
+    private void initializeViews() {
         detailImageView = findViewById(R.id.detailImageView);
         detailTitleTextView = findViewById(R.id.detailNameTextView);
         detailLocationTextView = findViewById(R.id.detailAddressTextView);
         detailDescriptionTextView = findViewById(R.id.detailDescriptionTextView);
         chatButton = findViewById(R.id.chatButton);
+        backButton = findViewById(R.id.backButton);
     }
 
     private void extractPostData() {
@@ -77,11 +70,10 @@ public class PostDetailActivity extends AppCompatActivity {
         title = intent.getStringExtra("title");
         description = intent.getStringExtra("description");
         imageUrl = intent.getStringExtra("imageUrl");
-        postId = intent.getStringExtra(postText);
-        founderId = intent.getStringExtra(founderText);
+        postId = intent.getStringExtra(POST_ID_KEY);
+        founderId = intent.getStringExtra(FOUNDER_ID_KEY);
         address = intent.getStringExtra("address");
 
-        // Fallback to lat/lng if address is null
         if (address == null || address.isEmpty()) {
             double lat = intent.getDoubleExtra("latitude", 0.0);
             double lng = intent.getDoubleExtra("longitude", 0.0);
@@ -102,20 +94,31 @@ public class PostDetailActivity extends AppCompatActivity {
         } else {
             detailImageView.setImageResource(android.R.color.darker_gray);
         }
+
+        if (founderId != null && founderId.equals(currentUserId)) {
+            chatButton.setVisibility(View.GONE);
+        }
+    }
+
+    private void setupListeners() {
+        backButton.setOnClickListener(v -> finish());
+
+        chatButton.setOnClickListener(v -> {
+            if (founderId == null || postId == null) {
+                showToast("Invalid post details");
+            } else {
+                initiateChat();
+            }
+        });
     }
 
     private void initiateChat() {
-        if (founderId == null || postId == null) {
-            Toast.makeText(this, "Invalid post details", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         String chatId = postId + "_" + founderId + "_" + currentUserId;
 
         Map<String, Object> chatData = new HashMap<>();
         chatData.put("chatId", chatId);
-        chatData.put(postText, postId);
-        chatData.put(founderText, founderId);
+        chatData.put(POST_ID_KEY, postId);
+        chatData.put(FOUNDER_ID_KEY, founderId);
         chatData.put("userId", currentUserId);
         chatData.put("participants", Arrays.asList(founderId, currentUserId));
         chatData.put("createdAt", FieldValue.serverTimestamp());
@@ -124,14 +127,17 @@ public class PostDetailActivity extends AppCompatActivity {
                 .document(chatId)
                 .set(chatData, SetOptions.merge())
                 .addOnSuccessListener(aVoid -> {
-                    Intent chatIntent = new Intent(PostDetailActivity.this, ChatActivity.class);
+                    Intent chatIntent = new Intent(this, ChatActivity.class);
                     chatIntent.putExtra("chatId", chatId);
-                    chatIntent.putExtra(founderText, founderId);
-                    chatIntent.putExtra(postText, postId);
+                    chatIntent.putExtra(FOUNDER_ID_KEY, founderId);
+                    chatIntent.putExtra(POST_ID_KEY, postId);
                     startActivity(chatIntent);
                 })
                 .addOnFailureListener(e ->
-                        Toast.makeText(PostDetailActivity.this, "Error starting chat: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                );
+                        showToast("Error starting chat: " + e.getMessage()));
+    }
+
+    private void showToast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 }

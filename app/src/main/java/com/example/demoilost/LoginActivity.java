@@ -12,9 +12,6 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,160 +22,148 @@ import com.google.firebase.firestore.SetOptions;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText emailInput;
-    private EditText passwordInput;
-    private TextView forgotPassword;
-    private TextView registerNow;
+    private EditText emailInput, passwordInput;
+    private TextView forgotPassword, registerNow;
     private Button loginButton;
+
     private FirebaseAuth auth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
-        // Initialize UI Elements
+        initializeUI();
+        initializeFirebase();
+        setupListeners();
+    }
+
+    private void initializeUI() {
         emailInput = findViewById(R.id.email);
         passwordInput = findViewById(R.id.password);
         forgotPassword = findViewById(R.id.forgotPassword);
         registerNow = findViewById(R.id.registerNow);
         loginButton = findViewById(R.id.loginButton);
+    }
 
+    private void initializeFirebase() {
         FirebaseApp.initializeApp(this);
         auth = FirebaseAuth.getInstance();
+    }
 
-        // Enable edge-to-edge UI
-        EdgeToEdge.enable(this);
+    private void setupListeners() {
+        forgotPassword.setOnClickListener(v -> showResetDialog());
+        registerNow.setOnClickListener(v -> navigateToRegister());
+        loginButton.setOnClickListener(v -> attemptLogin());
+    }
 
+    private void showResetDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Reset Password");
 
-        forgotPassword.setOnClickListener(v -> {
-            // Show a dialog to collect the user's email
-            AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
-            builder.setTitle("Reset Password");
+        final EditText inputEmail = new EditText(this);
+        inputEmail.setHint("Enter your email");
+        builder.setView(inputEmail);
 
-            final EditText inputEmail = new EditText(LoginActivity.this);
-            inputEmail.setHint("Enter your email");
-            builder.setView(inputEmail);
-
-            builder.setPositiveButton("Send Reset Link", (dialog, which) -> {
-                String email = inputEmail.getText().toString().trim();
-                if (!TextUtils.isEmpty(email)) {
-                    sendPasswordResetEmail(email);
-                } else {
-                    Toast.makeText(LoginActivity.this,
-                            "Please enter an email address", Toast.LENGTH_SHORT).show();
-                }
-            });
-
-            builder.setNegativeButton("Cancel", (dialogInterface, i) ->
-                    dialogInterface.dismiss()
-            );
-
-            builder.show();
-        });
-
-
-        // Register Now Click Event
-        registerNow.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-            startActivity(intent);
-        });
-
-        // Login Button Click Event
-        loginButton.setOnClickListener(v -> {
-            if (!validateEmail() || !validatePassword()) {
-                return;
+        builder.setPositiveButton("Send Reset Link", (dialog, which) -> {
+            String email = inputEmail.getText().toString().trim();
+            if (!TextUtils.isEmpty(email)) {
+                sendPasswordResetEmail(email);
+            } else {
+                showToast("Please enter an email address");
             }
-            signInUser();
         });
+
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    private void navigateToRegister() {
+        startActivity(new Intent(this, RegisterActivity.class));
+    }
+
+    private void attemptLogin() {
+        if (!validateEmail() || !validatePassword()) return;
+        signInUser();
+    }
+
+    private boolean validateEmail() {
+        String email = emailInput.getText().toString();
+        if (email.isEmpty()) {
+            emailInput.setError("Email cannot be empty");
+            return false;
+        }
+        emailInput.setError(null);
+        return true;
+    }
+
+    private boolean validatePassword() {
+        String password = passwordInput.getText().toString();
+        if (password.isEmpty()) {
+            passwordInput.setError("Password cannot be empty");
+            return false;
+        }
+        passwordInput.setError(null);
+        return true;
     }
 
     private void sendPasswordResetEmail(String email) {
-        FirebaseAuth authFix = FirebaseAuth.getInstance();
-        authFix.sendPasswordResetEmail(email)
+        auth.sendPasswordResetEmail(email)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this,
-                                "Reset link sent to " + email,
-                                Toast.LENGTH_LONG).show();
+                        showToast("Reset link sent to " + email);
                     } else {
-                        String error = (task.getException() != null)
-                                ? task.getException().getMessage() : "unknown error";
-                        Toast.makeText(LoginActivity.this,
-                                "Error: " + error,
-                                Toast.LENGTH_LONG).show();
+                        String error = (task.getException() != null) ? task.getException().getMessage() : "Unknown error";
+                        showToast("Error: " + error);
                     }
                 });
     }
 
-    public Boolean validateEmail() {
-        String val = emailInput.getText().toString();
-        if (val.isEmpty()) {
-            emailInput.setError("Email cannot be empty");
-            return false;
-        } else {
-            emailInput.setError(null);
-            return true;
-        }
-    }
+    private void signInUser() {
+        String email = emailInput.getText().toString().trim();
+        String password = passwordInput.getText().toString().trim();
 
-    public Boolean validatePassword() {
-        String val = passwordInput.getText().toString();
-        if (val.isEmpty()) {
-            passwordInput.setError("Password cannot be empty");
-            return false;
-        } else {
-            passwordInput.setError(null);
-            return true;
-        }
-    }
-
-    public void signInUser() {
-        String userEmail = emailInput.getText().toString().trim();
-        String userPassword = passwordInput.getText().toString().trim();
-
-        auth.signInWithEmailAndPassword(userEmail, userPassword)
+        auth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        // Login successful
-                        FirebaseUser user = auth.getCurrentUser();
-                        if (user != null) {
-                            String uid = user.getUid();
-                            String displayName = user.getDisplayName();
-                            String email = user.getEmail();
-                            String photoUrl = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : "";
-
-                            Map<String, Object> userData = new HashMap<>();
-                            userData.put("uid", uid);
-                            userData.put("name", displayName != null ? displayName : "Unnamed");
-                            userData.put("email", email);
-                            userData.put("photoUrl", photoUrl);
-
-                            FirebaseFirestore.getInstance()
-                                    .collection("users")
-                                    .document(uid)
-                                    .set(userData, SetOptions.merge())
-                                    .addOnSuccessListener(aVoid -> {
-                                        // Go to MapActivity after saving user
-                                        Intent intent = new Intent(LoginActivity.this, MapActivity.class);
-                                        startActivity(intent);
-                                        finish();
-                                    })
-                                    .addOnFailureListener(e ->
-                                            Toast.makeText(LoginActivity.this, "Failed to save user: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                                    );
-                        }
+                        handleSuccessfulLogin();
                     } else {
-                        // Login failed
                         Log.e("LoginError", "Login failed", task.getException());
-                        Toast.makeText(LoginActivity.this, "Invalid credentials: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
+                        showToast("Invalid credentials: " + task.getException().getMessage());
                     }
                 });
     }
 
+    private void handleSuccessfulLogin() {
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null) return;
 
+        String uid = user.getUid();
+        String displayName = user.getDisplayName() != null ? user.getDisplayName() : "Unnamed";
+        String email = user.getEmail();
+        String photoUrl = (user.getPhotoUrl() != null) ? user.getPhotoUrl().toString() : "";
 
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("uid", uid);
+        userData.put("name", displayName);
+        userData.put("email", email);
+        userData.put("photoUrl", photoUrl);
+
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(uid)
+                .set(userData, SetOptions.merge())
+                .addOnSuccessListener(aVoid -> {
+                    startActivity(new Intent(LoginActivity.this, MapActivity.class));
+                    finish();
+                })
+                .addOnFailureListener(e -> showToast("Failed to save user: " + e.getMessage()));
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    }
 }
