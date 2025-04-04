@@ -98,9 +98,3 @@ The project uses Gradle for dependency management and build automation. The sett
 
    https://console.firebase.google.com/u/0/project/lostnfound-group8/overview
 
----
-
-## Contact
-
-For further questions or support, please contact the project maintainer at [your-email@example.com].
-
