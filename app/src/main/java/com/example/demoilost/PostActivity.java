@@ -176,7 +176,6 @@ public class PostActivity extends AppCompatActivity {
             });
 
         } catch (Exception e) {
-            e.printStackTrace();
             showToast("Failed to read image");
         }
     }

@@ -278,7 +278,6 @@ public class ChatActivity extends AppCompatActivity {
             });
 
         } catch (Exception e) {
-            e.printStackTrace();
             Toast.makeText(this, "Image processing failed", Toast.LENGTH_SHORT).show();
         }
     }
