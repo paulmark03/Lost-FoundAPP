@@ -22,7 +22,8 @@ import java.util.Map;
 
 public class PostDetailActivity extends AppCompatActivity {
 
-    private ImageView detailImageView, backButton;
+    private ImageView detailImageView;
+    private ImageView backButton;
     private TextView detailTitleTextView;
     private TextView detailLocationTextView;
     private TextView detailDescriptionTextView;

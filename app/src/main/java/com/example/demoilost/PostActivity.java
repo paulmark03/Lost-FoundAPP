@@ -57,7 +57,8 @@ public class PostActivity extends AppCompatActivity {
     private EditText locationEditText;
 
     // State
-    private Uri selectedPhotoUri, cameraPhotoUri;
+    private Uri selectedPhotoUri;
+    private Uri cameraPhotoUri;
     private GeoPoint geoPointFromSearch;
     private boolean isTestMode = false;
 
