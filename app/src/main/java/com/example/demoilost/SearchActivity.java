@@ -29,7 +29,6 @@ import java.util.List;
 
 public class SearchActivity extends AppCompatActivity {
 
-    private static final String POSTS_COLLECTION = "posts";
 
     private RecyclerView postsRecyclerView;
     private EditText searchInput;
@@ -109,7 +108,10 @@ public class SearchActivity extends AppCompatActivity {
 
     private void setupSearch() {
         searchInput.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // This method is intentionally left empty
+                // because we don't need to perform any action before the text changes.
+            }
 
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String keyword = s.toString().trim();
@@ -120,7 +122,10 @@ public class SearchActivity extends AppCompatActivity {
                 }
             }
 
-            @Override public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {
+                // This method is intentionally left empty
+                // because we don't need to perform any action after the text changes.
+            }
         });
     }
 

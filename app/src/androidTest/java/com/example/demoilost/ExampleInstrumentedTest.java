@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
+import static androidx.test.espresso.Espresso.onIdle;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
@@ -68,11 +69,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.loginButton)).perform(click());
 
         // Optionally wait for navigation to MapActivity
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
     }
 
 
@@ -119,11 +117,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.termsCheckbox)).perform(click());
         onView(withId(R.id.signupButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
 
     }
@@ -139,11 +134,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.termsCheckbox)).perform(click());
         onView(withId(R.id.signupButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
 
@@ -158,11 +150,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.termsCheckbox)).perform(click());
         onView(withId(R.id.signupButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
 
@@ -178,11 +167,8 @@ public class ExampleInstrumentedTest {
 
         onView(withId(R.id.signupButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
 
     }
@@ -200,11 +186,8 @@ public class ExampleInstrumentedTest {
 
         onView(withId(R.id.signupButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
@@ -221,11 +204,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.termsCheckbox)).perform(click());
         onView(withId(R.id.signupButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
     }
@@ -241,12 +221,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.confirmPasswordInput)).perform(typeText("validpass123"), closeSoftKeyboard());
         onView(withId(R.id.termsCheckbox)).perform(click());
         onView(withId(R.id.signupButton)).perform(click());
+        onIdle(); // Waits for the main looper to be idle
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         onView(withId(R.id.signupButton)).check(matches(isDisplayed()));
     }
@@ -259,13 +235,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.email)).perform(typeText("wrong@email.com"), closeSoftKeyboard());
         onView(withId(R.id.password)).perform(typeText("wrongpass"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
+        onIdle(); // Waits for the main looper to be idle
 
-
-        try {
-            Thread.sleep(2500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         // Check that the login screen is still visible (user not redirected)
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
@@ -279,11 +250,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.password)).perform(typeText("validpass123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
-        try {
-            Thread.sleep(2000); // Wait 3 seconds
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(withId(R.id.email)).check(matches(hasErrorText("Email cannot be empty")));
     }
@@ -296,11 +264,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.email)).perform(typeText("newuser@example.com"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
-        try {
-            Thread.sleep(2000); // Wait 3 seconds
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(withId(R.id.password)).check(matches(hasErrorText("Password cannot be empty")));
     }
@@ -315,11 +280,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.password)).perform(typeText("validpass123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
-        try {
-            Thread.sleep(2000); // Wait 3 seconds
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
 
         onView(withId(R.id.map)).check(matches(isDisplayed()));
@@ -368,11 +330,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
         onView(withId(R.id.postButton)).perform(click());
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         onView(withId(R.id.map)).check(matches(isDisplayed()));
 
         Intents.release();
@@ -395,12 +354,8 @@ public class ExampleInstrumentedTest {
 
         onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
         onView(withId(R.id.postButton)).perform(click());
+        onIdle(); // Waits for the main looper to be idle
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         onView(withId(R.id.postButton)).check(matches(isDisplayed()));
 
         Intents.release();
@@ -424,11 +379,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
         onView(withId(R.id.postButton)).perform(click());
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         onView(withId(R.id.postButton)).check(matches(isDisplayed()));
 
         Intents.release();
@@ -452,11 +404,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
         onView(withId(R.id.postButton)).perform(click());
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         onView(withId(R.id.postButton)).check(matches(isDisplayed()));
 
         Intents.release();
@@ -477,20 +426,12 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.nameEditText)).perform(typeText("Lost Black Wallet"), closeSoftKeyboard());
         onView(withId(R.id.descriptionEditText)).perform(typeText("Found near the station"), closeSoftKeyboard());
         onView(withId(R.id.postButton)).perform(click());
+        onIdle(); // Waits for the main looper to be idle
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
         onView(withId(R.id.postButton)).check(matches(isDisplayed()));
 
         Intents.release();
     }
-
-    //LF004
-    @Test
-    public void B8testDeletePost() {}
 
 
     //AC006
@@ -505,11 +446,8 @@ public class ExampleInstrumentedTest {
         // Confirm the dialog
         onView(withText("Delete")).inRoot(isDialog()).check(matches(isDisplayed())).perform(click());
 
-        try {
-            Thread.sleep(2000); // Wait 3 seconds
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         // Confirm we are redirected to login screen (by checking for login button)
         onView(withId(R.id.loginButton)).check(matches(isDisplayed()));
     }
@@ -519,11 +457,8 @@ public class ExampleInstrumentedTest {
     public void C0testReportedItemsListViewIsDisplayed() {
         ActivityScenario.launch(SearchActivity.class);
 
-        try {
-            Thread.sleep(3000); // Allow Firestore to load posts
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Confirm RecyclerView is displayed
 
@@ -538,11 +473,7 @@ public class ExampleInstrumentedTest {
         ActivityScenario.launch(MapActivity.class);
 
         // Give GoogleMap time to load and attach
-        try {
-            Thread.sleep(3000); // You can replace with IdlingResource if using OnMapReadyCallback
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
 
         // Just confirm the map view is visible
         onView(withId(R.id.map)).check(matches(isDisplayed()));
@@ -556,20 +487,13 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
         onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
+        onIdle(); // Waits for the main looper to be idle
 
-        try {
-            Thread.sleep(2000); // Let posts load
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         onView(withId(R.id.bottom_search)).perform(click());
 
-        try {
-            Thread.sleep(2000); // Let posts load
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(FirstViewMatcher.first(allOf(
                 withId(R.id.titleTextView),
@@ -577,11 +501,8 @@ public class ExampleInstrumentedTest {
         ))).perform(click());
 
 
-        try {
-            Thread.sleep(2000); // Let posts load
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
         // Assert detail screen is shown
         onView(withId(R.id.detailNameTextView)).check(matches(isDisplayed()));
     }
@@ -597,20 +518,14 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Navigate to Search tab
         onView(withId(R.id.bottom_search)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Click first visible post title
         onView(FirstViewMatcher.first(allOf(
@@ -618,31 +533,22 @@ public class ExampleInstrumentedTest {
                 isDescendantOfA(withId(R.id.postsRecyclerView))
         ))).perform(click());
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Tap the "Chat with Founder" button
         onView(withId(R.id.chatButton)).perform(click());
 
-        try {
-            Thread.sleep(1500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Send message in chat
         String message = "Interested in this item!";
         onView(withId(R.id.messageInput)).perform(typeText(message), closeSoftKeyboard());
         onView(withId(R.id.sendButton)).perform(click());
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(withText(message)).check(matches(isDisplayed()));
     }
@@ -707,19 +613,12 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
-        try {
-            Thread.sleep(2000); // Let posts load
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
 
         onView(withId(R.id.bottom_chat)).perform(click());
 
-        try {
-            Thread.sleep(2000); // Let posts load
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Click any visible post title to navigate
         onView(FirstViewMatcher.first(allOf(
@@ -736,19 +635,13 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.sendButton)).perform(click());
 
         // Step 2: Check that the message appears
-        try {
-            Thread.sleep(1500); // wait for Firestore listener to sync
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(withText(testMessage)).check(matches(isDisplayed()));
 
-        try {
-            Thread.sleep(1500); // wait for Firestore listener to sync
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         onView(withId(R.id.backButton)).perform(click());
 
@@ -756,11 +649,8 @@ public class ExampleInstrumentedTest {
                 .perform(ViewActions.swipeLeft());
 
         // Wait for animation/deletion
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Confirm it's gone
         onView(withId(R.id.messageTextView)).check(doesNotExist());
@@ -779,11 +669,8 @@ public class ExampleInstrumentedTest {
         onView(withId(R.id.loginButton)).perform(click());
 
         // Wait for main activity to load
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Type city name in search input
         onView(withId(R.id.search_location_button)).perform(click());
@@ -798,11 +685,8 @@ public class ExampleInstrumentedTest {
 
 
         // Wait for map to update
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        onIdle(); // Waits for the main looper to be idle
+
 
         // Check if map shows city result - assume you set a marker or update a text view
         onView(withText(containsString("Paris"))).check(matches(isDisplayed()));

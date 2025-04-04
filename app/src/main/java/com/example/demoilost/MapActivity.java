@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -35,6 +36,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executors;
 
 public class MapActivity extends AppCompatActivity implements OnMapReadyCallback {
 
@@ -144,49 +146,56 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
 
     private void searchLocationAndZoom(String addressText) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        Runnable onNotFound = () -> postToast("No location found for: " + addressText);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             geocoder.getFromLocationName(addressText, 1, new Geocoder.GeocodeListener() {
                 @Override
                 public void onGeocode(@NonNull List<Address> addresses) {
                     if (!addresses.isEmpty()) {
-                        Address address = addresses.get(0);
-                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                        runOnUiThread(() -> {
-                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
-                            currentLocationTextView.setText(addressText);
-                        });
+                        updateMapFromAddress(addresses.get(0), addressText);
                     } else {
-                        runOnUiThread(() -> showToast("No location found for: " + addressText));
+                        onNotFound.run();
                     }
                 }
 
                 @Override
-                public void onError(@NonNull String errorMessage) {
-                    runOnUiThread(() -> showToast("Geocoder error: " + errorMessage));
+                public void onError(@Nullable String errorMessage) {
+                    postToast("Geocoder error: " + (errorMessage != null ? errorMessage : "Unknown error"));
                 }
             });
         } else {
-            // Legacy fallback for API < 33 (must run on background thread)
-            new Thread(() -> {
+            Executors.newSingleThreadExecutor().execute(() -> {
                 try {
+                    @SuppressWarnings("deprecation")
                     List<Address> addresses = geocoder.getFromLocationName(addressText, 1);
                     if (!addresses.isEmpty()) {
-                        Address address = addresses.get(0);
-                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                        runOnUiThread(() -> {
-                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
-                            currentLocationTextView.setText(addressText);
-                        });
+                        updateMapFromAddress(addresses.get(0), addressText);
                     } else {
-                        runOnUiThread(() -> showToast("No location found for: " + addressText));
+                        onNotFound.run();
                     }
                 } catch (IOException e) {
-                    runOnUiThread(() -> showToast("Error finding location: " + e.getMessage()));
+                    postToast("Error finding location: " + e.getMessage());
                 }
-            }).start();
+            });
         }
     }
+
+
+
+    private void updateMapFromAddress(Address address, String label) {
+        runOnUiThread(() -> {
+            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    new com.google.android.gms.maps.model.LatLng(address.getLatitude(), address.getLongitude()), 15f));
+            currentLocationTextView.setText(label);
+        });
+    }
+
+    private void postToast(String message) {
+        runOnUiThread(() -> showToast(message));
+    }
+
+
 
 
 

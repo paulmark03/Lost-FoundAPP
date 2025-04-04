@@ -1,7 +1,5 @@
 package com.example.demoilost;
 
-import android.widget.Toast;
-
 import com.example.demoilost.adapter.PostAdapter;
 import com.example.demoilost.model.PostModel;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -13,6 +11,11 @@ import java.util.List;
 public class PostRepository {
 
     private static final String POSTS_COLLECTION = "posts";
+
+    // Prevent instantiation
+    private PostRepository() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     public static void loadAllPosts(List<PostModel> resultList, PostAdapter adapter, Runnable onError) {
         FirebaseFirestore.getInstance().collection(POSTS_COLLECTION)

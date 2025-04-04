@@ -7,6 +7,11 @@ import android.os.Build;
 
 public class NavigationUtils {
 
+    //  Prevent instantiation
+    private NavigationUtils() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
     public static void navigateTo(Activity activity, Class<?> target) {
         Intent intent = new Intent(activity, target);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
