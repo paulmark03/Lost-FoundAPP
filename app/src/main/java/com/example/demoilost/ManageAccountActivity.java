@@ -31,7 +31,6 @@ public class ManageAccountActivity extends AppCompatActivity {
     private Button deleteButton;
     private ImageView backButton;
 
-    private FirebaseAuth auth;
     private FirebaseUser currentUser;
     private FirebaseFirestore db;
 
@@ -65,6 +64,7 @@ public class ManageAccountActivity extends AppCompatActivity {
     }
 
     private void initFirebase() {
+        FirebaseAuth auth;
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         currentUser = auth.getCurrentUser();

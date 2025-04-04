@@ -54,33 +54,51 @@ android {
 
 
 dependencies {
+    // Core Android libraries
+    implementation(libs.core)
     implementation(libs.appcompat)
-    implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    implementation(libs.firebase.auth)
-    implementation(libs.play.services.maps)
-    implementation(libs.firebase.firestore)
-    testImplementation(libs.junit)
-    testImplementation(libs.junit.jupiter)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+    implementation(libs.fragment)
+
+    // Material Design
+    implementation(libs.material)
     implementation(libs.material.v130alpha01)
     implementation(libs.material.vversion)
+
+    // Firebase
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+
+    // Google Services
     implementation(libs.play.services.maps)
-    implementation(libs.fragment)  // package for creating a fragment (bottom_sheet)
     implementation(libs.play.services.maps.v1900)
-    // Glide for loading images
-    implementation(libs.glide)
     implementation(libs.places)
+
+    // Image loading
+    implementation(libs.glide)
+
+    // Networking / Utilities
+    implementation(libs.okhttp)
+    implementation(libs.commons.io)
     annotationProcessor(libs.compiler)
-    implementation (libs.okhttp)
-    implementation (libs.commons.io)
+
+    // Unit Testing
+    testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
+
+    // Android Instrumentation Testing
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.espresso.intents)
 }
 
 
+
 tasks.register<JacocoReport>("jacocoTestReport") {
+    group = "verification"
+    description = "Generates Jacoco coverage report for the Debug build."
+
     dependsOn("testDebugUnitTest")
 
     reports {
@@ -102,6 +120,7 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
     executionData.setFrom(files("${buildDir}/jacoco/testDebugUnitTest.exec"))
 }
+
 
 
 

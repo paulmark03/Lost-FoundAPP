@@ -29,17 +29,16 @@ import com.google.firebase.firestore.Query;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 
 
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import okhttp3.Call;
@@ -60,7 +59,6 @@ public class ChatActivity extends AppCompatActivity {
     private List<Message> messagesList;
     private FirebaseFirestore firestore;
     private String chatId;
-    private String founderId;
     private Uri cameraImageUri;
     private String chat = "chats";
 
@@ -78,7 +76,7 @@ public class ChatActivity extends AppCompatActivity {
     // Camera image capture
     private final ActivityResultLauncher<Uri> cameraLauncher =
             registerForActivityResult(new ActivityResultContracts.TakePicture(), result -> {
-                if (result && cameraImageUri != null) {
+                if (cameraImageUri != null) {
                     uploadImageToImgur(cameraImageUri);
                 }
             });
@@ -110,6 +108,7 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+
         chatRecyclerView = findViewById(R.id.chatRecyclerView);
         inputMessage = findViewById(R.id.messageInput);
         sendButton = findViewById(R.id.sendButton);
@@ -117,7 +116,6 @@ public class ChatActivity extends AppCompatActivity {
         firestore = FirebaseFirestore.getInstance();
 
         chatId = getIntent().getStringExtra("chatId");
-        founderId = getIntent().getStringExtra("founderId");
 
         findViewById(R.id.backButton).setOnClickListener(v -> finish());
     }
@@ -223,62 +221,24 @@ public class ChatActivity extends AppCompatActivity {
 
 
     void uploadImageToImgur(Uri imageUri) {
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-            byte[] imageBytes = IOUtils.toByteArray(inputStream);
-            String base64Image = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        ImgurUploader.upload(this, imageUri, new ImgurUploader.UploadCallback() {
+            @Override
+            public void onSuccess(String imageUrl) {
+                Message message = new Message(
+                        FirebaseAuth.getInstance().getCurrentUser().getUid(),
+                        null,
+                        imageUrl,
+                        "image",
+                        null
+                );
+                sendMessageToFirestore(message);
+            }
 
-            OkHttpClient client = new OkHttpClient();
-
-            RequestBody body = new FormBody.Builder()
-                    .add("image", base64Image)
-                    .build();
-
-            Request request = new Request.Builder()
-                    .url("https://api.imgur.com/3/image")
-                    .header("Authorization", "Client-ID ad8d936a2f446c7")
-                    .post(body)
-                    .build();
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, java.io.IOException e) {
-                    runOnUiThread(() ->
-                            Toast.makeText(ChatActivity.this, "Image upload failed", Toast.LENGTH_SHORT).show());
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    if (response.isSuccessful()) {
-                        String json = response.body().string();
-                        try {
-                            String imageUrl = new JSONObject(json)
-                                    .getJSONObject("data")
-                                    .getString("link");
-
-                            Message message = new Message(
-                                    FirebaseAuth.getInstance().getCurrentUser().getUid(),
-                                    null,
-                                    imageUrl,
-                                    "image",
-                                    null
-                            );
-
-                            runOnUiThread(() -> sendMessageToFirestore(message));
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            runOnUiThread(() ->
-                                    Toast.makeText(ChatActivity.this, "Failed to parse image URL", Toast.LENGTH_SHORT).show()
-                            );
-                        }
-                    }
-                }
-
-            });
-
-        } catch (Exception e) {
-            Toast.makeText(this, "Image processing failed", Toast.LENGTH_SHORT).show();
-        }
+            @Override
+            public void onFailure(String errorMessage) {
+                Toast.makeText(ChatActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
 }

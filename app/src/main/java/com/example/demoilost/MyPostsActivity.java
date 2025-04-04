@@ -84,7 +84,9 @@ public class MyPostsActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
+                int position = viewHolder.getBindingAdapterPosition();
+                if (position == RecyclerView.NO_POSITION) return;
+
                 PostModel post = postList.get(position);
 
                 firestore.collection("posts").document(post.getPostId())
@@ -99,6 +101,7 @@ public class MyPostsActivity extends AppCompatActivity {
                             postAdapter.notifyItemChanged(position); // Revert swipe
                         });
             }
+
 
             @Override
             public void onChildDraw(Canvas c, RecyclerView rv, RecyclerView.ViewHolder vh, float dX, float dY, int actionState, boolean isActive) {

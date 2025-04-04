@@ -1,7 +1,9 @@
 package com.example.demoilost;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.widget.ImageView;
@@ -27,6 +29,7 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.IOException;
 
@@ -40,11 +43,11 @@ import okhttp3.Response;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private static final int PICK_IMAGE_REQUEST = 1;
-
     private TextView profileName;
     private ImageView profileIcon;
-    private Uri imageUri;
+
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
+    private ActivityResultLauncher<Intent> manageAccountLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,40 +55,50 @@ public class SettingsActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_settings);
 
+        initLaunchers();
         initViews();
         setupBottomNav();
         loadUserProfile();
     }
 
-    private void initViews() {
-        profileName = findViewById(R.id.profileName);
-        profileIcon = findViewById(R.id.profileIcon);
+    private void initLaunchers() {
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            Glide.with(this).load(imageUri).into(profileIcon);
+                            uploadToImgur(imageUri);
+                        }
+                    }
+                });
 
-        ImageView editIcon = findViewById(R.id.editIcon);
-        editIcon.setOnClickListener(v -> pickImage());
-
-        // Dynamically set labels
-        ((TextView) findViewById(R.id.rowMyPosts).findViewById(R.id.settingLabel)).setText("My Posts");
-        ((TextView) findViewById(R.id.rowManageAccount).findViewById(R.id.settingLabel)).setText("Manage Account");
-        ((TextView) findViewById(R.id.rowPrivacy).findViewById(R.id.settingLabel)).setText("Privacy & Security");
-        ((TextView) findViewById(R.id.rowLogout).findViewById(R.id.settingLabel)).setText("Log Out");
-
-        // Click actions
-        findViewById(R.id.rowMyPosts).setOnClickListener(v ->
-                startActivity(new Intent(this, MyPostsActivity.class)));
-
-        ActivityResultLauncher<Intent> manageAccountLauncher = registerForActivityResult(
+        manageAccountLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == RESULT_OK) {
                         loadUserProfile();
                     }
                 });
+    }
 
-        findViewById(R.id.rowManageAccount).setOnClickListener(v -> {
-            Intent intent = new Intent(this, ManageAccountActivity.class);
-            manageAccountLauncher.launch(intent);
-        });
+    private void initViews() {
+        profileName = findViewById(R.id.profileName);
+        profileIcon = findViewById(R.id.profileIcon);
+
+        findViewById(R.id.editIcon).setOnClickListener(v -> pickImage());
+
+        ((TextView) findViewById(R.id.rowMyPosts).findViewById(R.id.settingLabel)).setText("My Posts");
+        ((TextView) findViewById(R.id.rowManageAccount).findViewById(R.id.settingLabel)).setText("Manage Account");
+        ((TextView) findViewById(R.id.rowPrivacy).findViewById(R.id.settingLabel)).setText("Privacy & Security");
+        ((TextView) findViewById(R.id.rowLogout).findViewById(R.id.settingLabel)).setText("Log Out");
+
+        findViewById(R.id.rowMyPosts).setOnClickListener(v ->
+                startActivity(new Intent(this, MyPostsActivity.class)));
+
+        findViewById(R.id.rowManageAccount).setOnClickListener(v ->
+                manageAccountLauncher.launch(new Intent(this, ManageAccountActivity.class)));
 
         findViewById(R.id.rowPrivacy).setOnClickListener(v ->
                 new androidx.appcompat.app.AlertDialog.Builder(this)
@@ -110,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity {
     private void pickImage() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+        imagePickerLauncher.launch(intent);
     }
 
     private void setupBottomNav() {
@@ -118,22 +131,37 @@ public class SettingsActivity extends AppCompatActivity {
         nav.setSelectedItemId(R.id.bottom_settings);
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.bottom_map) {
-                startNewIntent(MapActivity.class);
-            } else if (id == R.id.bottom_search) {
-                startNewIntent(SearchActivity.class);
-            } else if (id == R.id.bottom_chat) {
-                startNewIntent(InboxActivity.class);
+                navigateTo(MapActivity.class);
+                return true;
             }
-            return id == R.id.bottom_settings;
+
+            if (id == R.id.bottom_search) {
+                navigateTo(SearchActivity.class);
+                return true;
+            }
+
+            if (id == R.id.bottom_settings) {
+                return true;
+            }
+
+            if (id == R.id.bottom_chat) {
+                navigateTo(InboxActivity.class);
+                return true;
+            }
+
+            return false;
         });
     }
 
-    private void startNewIntent(Class<?> cls) {
-        startActivity(new Intent(this, cls));
-        overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
-        finish();
+
+
+    private void navigateTo(Class<?> cls) {
+        NavigationUtils.navigateTo(this, cls);
     }
+
+
 
     private void loadUserProfile() {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
@@ -153,7 +181,9 @@ public class SettingsActivity extends AppCompatActivity {
                         profileName.setText(name != null ? name : "No Name");
 
                         if (photoUrl != null && !photoUrl.isEmpty()) {
-                            Glide.with(this).load(photoUrl).placeholder(R.drawable.ic_profile).into(profileIcon);
+                            Glide.with(this).load(photoUrl)
+                                    .placeholder(R.drawable.ic_profile)
+                                    .into(profileIcon);
                         } else {
                             profileIcon.setImageResource(R.drawable.ic_profile);
                         }
@@ -164,45 +194,17 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void uploadToImgur(Uri uri) {
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(uri);
-            byte[] imageBytes = IOUtils.toByteArray(inputStream);
-            String base64Image = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        ImgurUploader.upload(this, uri, new ImgurUploader.UploadCallback() {
+            @Override
+            public void onSuccess(String imageUrl) {
+                updateProfilePicture(imageUrl);
+            }
 
-            OkHttpClient client = new OkHttpClient();
-            RequestBody body = new FormBody.Builder().add("image", base64Image).build();
-
-            Request request = new Request.Builder()
-                    .url("https://api.imgur.com/3/image")
-                    .header("Authorization", "Client-ID ad8d936a2f446c7")
-                    .post(body)
-                    .build();
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override public void onFailure(Call call, IOException e) {
-                    runOnUiThread(() -> Toast.makeText(SettingsActivity.this, "Upload failed", Toast.LENGTH_SHORT).show());
-                }
-
-                @Override public void onResponse(Call call, Response response) throws IOException {
-                    if (response.isSuccessful()) {
-                        try {
-                            JSONObject json = new JSONObject(response.body().string());
-                            String imageUrl = json.getJSONObject("data").getString("link");
-                            runOnUiThread(() -> updateProfilePicture(imageUrl));
-                        } catch (JSONException e) {
-                            runOnUiThread(() ->
-                                    Toast.makeText(SettingsActivity.this, "Failed to parse image URL", Toast.LENGTH_SHORT).show());
-                        }
-                    } else {
-                        runOnUiThread(() ->
-                                Toast.makeText(SettingsActivity.this, "Imgur upload failed", Toast.LENGTH_SHORT).show());
-                    }
-                }
-            });
-
-        } catch (Exception e) {
-            Toast.makeText(this, "Error reading image", Toast.LENGTH_SHORT).show();
-        }
+            @Override
+            public void onFailure(String errorMessage) {
+                Toast.makeText(SettingsActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateProfilePicture(String imageUrl) {
@@ -213,6 +215,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setPhotoUri(Uri.parse(imageUrl)).build();
 
         user.updateProfile(profileUpdate);
+
         FirebaseFirestore.getInstance().collection("users")
                 .document(user.getUid())
                 .update("photoUrl", imageUrl)
@@ -220,20 +223,5 @@ public class SettingsActivity extends AppCompatActivity {
                         Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null) {
-            imageUri = data.getData();
-            Glide.with(this).load(imageUri).into(profileIcon);
-            uploadToImgur(imageUri);
-        }
-
-        if (requestCode == 101 && resultCode == RESULT_OK) {
-            loadUserProfile(); // just in case
-        }
     }
 }

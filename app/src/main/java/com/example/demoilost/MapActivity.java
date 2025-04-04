@@ -1,8 +1,10 @@
 package com.example.demoilost;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
@@ -134,31 +136,59 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
         builder.show();
     }
 
-    private void navigateTo(Class<?> target) {
-        startActivity(new Intent(this, target));
-        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
-        finish();
+    private void navigateTo(Class<?> cls) {
+        NavigationUtils.navigateTo(this, cls);
     }
+
+
 
     private void searchLocationAndZoom(String addressText) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
-        try {
-            List<Address> addresses = geocoder.getFromLocationName(addressText, 1);
-            if (addresses != null && !addresses.isEmpty()) {
-                Address address = addresses.get(0);
-                LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            geocoder.getFromLocationName(addressText, 1, new Geocoder.GeocodeListener() {
+                @Override
+                public void onGeocode(@NonNull List<Address> addresses) {
+                    if (!addresses.isEmpty()) {
+                        Address address = addresses.get(0);
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                        runOnUiThread(() -> {
+                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
+                            currentLocationTextView.setText(addressText);
+                        });
+                    } else {
+                        runOnUiThread(() -> showToast("No location found for: " + addressText));
+                    }
+                }
 
-                myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
-                currentLocationTextView.setText(addressText);
-            } else {
-                showToast("No location found for: " + addressText);
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Geocoder error", e);
-            showToast("Error finding location: " + e.getMessage());
+                @Override
+                public void onError(@NonNull String errorMessage) {
+                    runOnUiThread(() -> showToast("Geocoder error: " + errorMessage));
+                }
+            });
+        } else {
+            // Legacy fallback for API < 33 (must run on background thread)
+            new Thread(() -> {
+                try {
+                    List<Address> addresses = geocoder.getFromLocationName(addressText, 1);
+                    if (!addresses.isEmpty()) {
+                        Address address = addresses.get(0);
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                        runOnUiThread(() -> {
+                            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f));
+                            currentLocationTextView.setText(addressText);
+                        });
+                    } else {
+                        runOnUiThread(() -> showToast("No location found for: " + addressText));
+                    }
+                } catch (IOException e) {
+                    runOnUiThread(() -> showToast("Error finding location: " + e.getMessage()));
+                }
+            }).start();
         }
     }
+
+
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {

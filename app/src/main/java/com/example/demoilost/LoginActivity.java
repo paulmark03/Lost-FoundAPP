@@ -93,7 +93,7 @@ public class LoginActivity extends AppCompatActivity {
         signInUser();
     }
 
-    private boolean validateEmail() {
+    boolean validateEmail() {
         String email = emailInput.getText().toString();
         if (email.isEmpty()) {
             emailInput.setError("Email cannot be empty");
@@ -103,7 +103,7 @@ public class LoginActivity extends AppCompatActivity {
         return true;
     }
 
-    private boolean validatePassword() {
+    boolean validatePassword() {
         String password = passwordInput.getText().toString();
         if (password.isEmpty()) {
             passwordInput.setError("Password cannot be empty");

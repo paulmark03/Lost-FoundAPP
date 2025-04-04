@@ -34,7 +34,6 @@ public class PostDetailActivity extends AppCompatActivity {
     private String founderId;
     private String postId;
     private String title;
-    private String location;
     private String description;
     private String imageUrl;
     private String address;

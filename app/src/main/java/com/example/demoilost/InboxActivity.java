@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+import android.app.ActivityOptions;
+import android.os.Build;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -73,20 +76,31 @@ public class InboxActivity extends AppCompatActivity {
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.bottom_map) {
-                startActivity(new Intent(this, MapActivity.class));
-            } else if (id == R.id.bottom_search) {
-                startActivity(new Intent(this, SearchActivity.class));
-            } else if (id == R.id.bottom_settings) {
-                startActivity(new Intent(this, SettingsActivity.class));
-            } else {
+                navigateTo(MapActivity.class);
                 return true;
             }
-            overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
-            finish();
-            return true;
+
+            if (id == R.id.bottom_search) {
+                navigateTo(SearchActivity.class);
+                return true;
+            }
+
+            if (id == R.id.bottom_settings) {
+                navigateTo(SettingsActivity.class);
+                return true;
+            }
+
+            return id == R.id.bottom_chat;
         });
     }
+
+    private void navigateTo(Class<?> cls) {
+        NavigationUtils.navigateTo(this, cls);
+    }
+
+
 
     private void setupSwipeToDelete() {
         new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
@@ -98,7 +112,7 @@ public class InboxActivity extends AppCompatActivity {
 
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                int position = viewHolder.getAdapterPosition();
+                int position = viewHolder.getBindingAdapterPosition();
                 ChatPreviewModel chat = chatList.get(position);
                 String chatId = chat.getChatId();
                 deleteChat(chatId, position);
@@ -180,7 +194,7 @@ public class InboxActivity extends AppCompatActivity {
                 });
     }
 
-    private boolean containsChat(String chatId) {
+    protected boolean containsChat(String chatId) {
         for (ChatPreviewModel chat : chatList) {
             if (chatId != null && chatId.equals(chat.getChatId())) return true;
         }
@@ -217,4 +231,6 @@ public class InboxActivity extends AppCompatActivity {
                     }
                 });
     }
+
+
 }

@@ -24,6 +24,7 @@ import com.example.demoilost.model.PostModel;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AddressComponent;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
@@ -48,11 +49,7 @@ import androidx.activity.result.contract.ActivityResultContracts.StartActivityFo
 
 public class PostActivity extends AppCompatActivity {
 
-    // Constants
-    private static final int REQUEST_IMAGE_CAPTURE = 101;
-    private static final int REQUEST_GALLERY = 102;
-    private static final int REQUEST_AUTOCOMPLETE = 1001;
-    private static final int CAMERA_PERMISSION_CODE = 200;
+
     private ActivityResultLauncher<Intent> galleryLauncher;
     private ActivityResultLauncher<Intent> autocompleteLauncher;
 
@@ -67,7 +64,6 @@ public class PostActivity extends AppCompatActivity {
 
     // State
     private Uri selectedPhotoUri;
-    private Uri cameraPhotoUri;
     private GeoPoint geoPointFromSearch;
     private boolean isTestMode = false;
 
@@ -146,50 +142,32 @@ public class PostActivity extends AppCompatActivity {
     }
 
     private void openAutocomplete() {
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG);
+        List<Place.Field> fields = Arrays.asList(
+                Place.Field.ID,
+                Place.Field.ADDRESS_COMPONENTS,
+                Place.Field.LOCATION
+        );
+
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(this);
         autocompleteLauncher.launch(intent);
     }
 
+
+
     private void uploadImageToImgur(Uri imageUri) {
-        try {
-            InputStream inputStream = getContentResolver().openInputStream(imageUri);
-            byte[] imageBytes = IOUtils.toByteArray(inputStream);
-            String base64Image = Base64.encodeToString(imageBytes, Base64.DEFAULT);
+        ImgurUploader.upload(this, imageUri, new ImgurUploader.UploadCallback() {
+            @Override
+            public void onSuccess(String imageUrl) {
+                createPost(imageUrl);
+            }
 
-            OkHttpClient client = new OkHttpClient();
-            RequestBody body = new FormBody.Builder().add("image", base64Image).build();
-
-            Request request = new Request.Builder()
-                    .url("https://api.imgur.com/3/image")
-                    .header("Authorization", "Client-ID ad8d936a2f446c7")
-                    .post(body)
-                    .build();
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override public void onFailure(Call call, IOException e) {
-                    runOnUiThread(() -> showToast("Upload failed: " + e.getMessage()));
-                }
-
-                @Override public void onResponse(Call call, Response response) throws IOException {
-                    if (response.isSuccessful()) {
-                        try {
-                            String imageUrl = new JSONObject(response.body().string())
-                                    .getJSONObject("data").getString("link");
-                            runOnUiThread(() -> createPost(imageUrl));
-                        } catch (JSONException e) {
-                            runOnUiThread(() -> showToast("Error parsing image URL"));
-                        }
-                    } else {
-                        runOnUiThread(() -> showToast("Imgur upload failed"));
-                    }
-                }
-            });
-
-        } catch (Exception e) {
-            showToast("Failed to read image");
-        }
+            @Override
+            public void onFailure(String errorMessage) {
+                showToast(errorMessage);
+            }
+        });
     }
+
 
     private void createPost(String imageUrl) {
         String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -257,10 +235,31 @@ public class PostActivity extends AppCompatActivity {
                 result -> {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Place place = Autocomplete.getPlaceFromIntent(result.getData());
-                        locationEditText.setText(place.getAddress());
-                        geoPointFromSearch = new GeoPoint(place.getLatLng().latitude, place.getLatLng().longitude);
+
+                        // ✅ Use helper to get readable address
+                        locationEditText.setText(buildAddressFromComponents(place));
+
+                        LatLng location = place.getLocation();
+                        if (location != null) {
+                            geoPointFromSearch = new GeoPoint(location.latitude, location.longitude);
+                        } else {
+                            showToast("No coordinates found for this location");
+                        }
                     }
                 });
+
     }
+    private String buildAddressFromComponents(Place place) {
+        if (place.getAddressComponents() == null) return "";
+
+        StringBuilder addressBuilder = new StringBuilder();
+        for (AddressComponent component : place.getAddressComponents().asList()) {
+            // You can be more selective based on types like "locality", "route", etc.
+            addressBuilder.append(component.getName()).append(" ");
+        }
+
+        return addressBuilder.toString().trim();
+    }
+
 
 }

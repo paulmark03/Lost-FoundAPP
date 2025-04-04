@@ -1,6 +1,8 @@
 package com.example.demoilost;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -32,7 +34,6 @@ public class SearchActivity extends AppCompatActivity {
     private RecyclerView postsRecyclerView;
     private EditText searchInput;
     private PostAdapter postAdapter;
-    private List<PostModel> fullPostList = new ArrayList<>();
     private List<PostModel> filteredPostList = new ArrayList<>();
 
     @Override
@@ -46,7 +47,7 @@ public class SearchActivity extends AppCompatActivity {
         setupRecyclerView();
         setupBottomNavigation();
         setupSearch();
-        loadAllPosts(filteredPostList, postAdapter);
+        loadAllPosts();
     }
 
     private void applyInsets() {
@@ -74,74 +75,64 @@ public class SearchActivity extends AppCompatActivity {
 
         nav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
             if (id == R.id.bottom_map) {
-                startActivity(new Intent(this, MapActivity.class));
-            } else if (id == R.id.bottom_settings) {
-                startActivity(new Intent(this, SettingsActivity.class));
-            } else if (id == R.id.bottom_chat) {
-                startActivity(new Intent(this, InboxActivity.class));
-            } else {
+
+                navigateTo(MapActivity.class);
+                // Already on map, do nothing
                 return true;
             }
-            overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
-            finish();
-            return true;
+
+            if (id == R.id.bottom_search) {
+                return true;
+            }
+
+            if (id == R.id.bottom_settings) {
+                navigateTo(SettingsActivity.class);
+                return true;
+            }
+
+            if (id == R.id.bottom_chat) {
+                navigateTo(InboxActivity.class);
+                return true;
+            }
+
+            return false;
         });
     }
+
+    private void navigateTo(Class<?> cls) {
+        NavigationUtils.navigateTo(this, cls);
+    }
+
+
 
     private void setupSearch() {
         searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                // No-op
-            }
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String keyword = s.toString().trim();
                 if (keyword.isEmpty()) {
-                    loadAllPosts(filteredPostList, postAdapter);
+                    loadAllPosts();
                 } else {
-                    searchPosts(keyword, filteredPostList, postAdapter);
+                    searchPosts(keyword);
                 }
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {
-                // No-op
-            }
+            @Override public void afterTextChanged(Editable s) {}
         });
     }
 
-    private void loadAllPosts(List<PostModel> resultList, PostAdapter adapter) {
-        FirebaseFirestore.getInstance().collection(POSTS_COLLECTION)
-                .orderBy("timestamp", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener(querySnapshots -> {
-                    resultList.clear();
-                    for (DocumentSnapshot doc : querySnapshots) {
-                        PostModel post = doc.toObject(PostModel.class);
-                        resultList.add(post);
-                    }
-                    adapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+    private void loadAllPosts() {
+        PostRepository.loadAllPosts(filteredPostList, postAdapter,
+                () -> Toast.makeText(this, "Failed to load posts", Toast.LENGTH_SHORT).show());
     }
 
-    private void searchPosts(String keyword, List<PostModel> resultList, PostAdapter adapter) {
-        FirebaseFirestore.getInstance().collection(POSTS_COLLECTION)
-                .orderBy("title")
-                .startAt(keyword)
-                .endAt(keyword + "\uf8ff")
-                .get()
-                .addOnSuccessListener(querySnapshots -> {
-                    resultList.clear();
-                    for (DocumentSnapshot doc : querySnapshots) {
-                        PostModel post = doc.toObject(PostModel.class);
-                        resultList.add(post);
-                    }
-                    adapter.notifyDataSetChanged();
-                });
+
+    private void searchPosts(String keyword) {
+        PostRepository.searchPosts(keyword, filteredPostList, postAdapter);
     }
+
 }

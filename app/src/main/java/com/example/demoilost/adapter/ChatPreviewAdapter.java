@@ -55,9 +55,7 @@ public class ChatPreviewAdapter extends RecyclerView.Adapter<ChatPreviewAdapter.
                         String name = snapshot.getString("name");
                         holder.chatWithUser.setText("Chat with: " + (name != null ? name : "Unknown User"));
                     })
-                    .addOnFailureListener(e -> {
-                        holder.chatWithUser.setText("Chat with: Unknown User");
-                    });
+                    .addOnFailureListener(e -> holder.chatWithUser.setText("Chat with: Unknown User"));
         } else {
             holder.chatWithUser.setText("Chat with: Unknown User");
         }
