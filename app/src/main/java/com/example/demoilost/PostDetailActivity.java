@@ -23,7 +23,9 @@ import java.util.Map;
 public class PostDetailActivity extends AppCompatActivity {
 
     private ImageView detailImageView, backButton;
-    private TextView detailTitleTextView, detailLocationTextView, detailDescriptionTextView;
+    private TextView detailTitleTextView;
+    private TextView detailLocationTextView;
+    private TextView detailDescriptionTextView;
     private Button chatButton;
 
     private FirebaseFirestore db;

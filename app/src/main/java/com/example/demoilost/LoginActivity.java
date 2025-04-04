@@ -24,8 +24,11 @@ import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private EditText emailInput, passwordInput;
-    private TextView forgotPassword, registerNow;
+    private EditText emailInput;
+    private EditText passwordInput;
+
+    private TextView forgotPassword;
+    private TextView registerNow;
     private Button loginButton;
 
     private FirebaseAuth auth;

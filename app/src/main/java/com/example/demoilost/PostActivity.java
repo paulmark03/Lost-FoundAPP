@@ -50,8 +50,11 @@ public class PostActivity extends AppCompatActivity {
 
     // Views
     private ImageView photoImageView;
-    private Button selectPhotoButton, postButton;
-    private EditText descriptionEditText, nameEditText, locationEditText;
+    private Button selectPhotoButton;
+    private Button postButton;
+    private EditText descriptionEditText;
+    private EditText nameEditText;
+    private EditText locationEditText;
 
     // State
     private Uri selectedPhotoUri, cameraPhotoUri;

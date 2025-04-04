@@ -27,7 +27,8 @@ import java.util.Map;
 public class ManageAccountActivity extends AppCompatActivity {
 
     private EditText nameEditText;
-    private Button saveButton, deleteButton;
+    private Button saveButton;
+    private Button deleteButton;
     private ImageView backButton;
 
     private FirebaseAuth auth;
