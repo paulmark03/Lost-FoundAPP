@@ -94,24 +94,9 @@ The project uses Gradle for dependency management and build automation. The sett
 
 ---
 
-## Troubleshooting
+## Firebase Servers
 
-- **Gradle Sync Issues:**  
-  If you encounter problems with dependency resolution, try:
-    - Checking your internet connection.
-    - Invalidating caches in Android Studio via **File > Invalidate Caches / Restart**.
-
-- **SDK Path Problems:**  
-  Ensure that your Android SDK path is correctly set in **Project Structure** or via environment variables.
-
-- **Build Failures:**  
-  Review the error logs in the **Build** window for specific issues. Often, missing SDK components or misconfigured Gradle settings are the cause.
-
----
-
-## License
-
-Include license information here (e.g., MIT, Apache, etc.) if applicable.
+   https://console.firebase.google.com/u/0/project/lostnfound-group8/overview
 
 ---
 
