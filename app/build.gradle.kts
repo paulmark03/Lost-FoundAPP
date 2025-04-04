@@ -5,6 +5,8 @@ import java.io.FileInputStream
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
+    id("org.sonarqube")
+    id("jacoco")
 }
 
 val localProperties = Properties().apply {
@@ -45,6 +47,8 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+
 }
 
 
@@ -58,6 +62,7 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation(libs.firebase.firestore)
     testImplementation(libs.junit)
+    testImplementation(libs.junit.jupiter)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(libs.material.v130alpha01)
@@ -75,7 +80,44 @@ dependencies {
 }
 
 
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
 
+    reports {
+        xml.required.set(true)  // Needed by SonarCloud
+        html.required.set(true) // Optional, nice to have
+    }
+
+    val debugTree = fileTree("${buildDir}/intermediates/javac/debug") {
+        exclude(
+            "**/R.class",
+            "**/R$*.class",
+            "**/BuildConfig.*",
+            "**/Manifest*.*",
+            "**/*Test*.*"
+        )
+    }
+
+    classDirectories.setFrom(files(debugTree))
+    sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+    executionData.setFrom(files("${buildDir}/jacoco/testDebugUnitTest.exec"))
+}
+
+
+
+sonarqube {
+    properties {
+        property("sonar.projectKey", "paulmark03_Lost-FoundAPP")
+        property("sonar.organization", "paulmark03")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "$buildDir/reports/jacoco/jacocoTestReport/jacocoTestReport.xml")
+    }
+}
+
+
+tasks.withType<JavaCompile>().configureEach {
+    options.compilerArgs.add("-Xlint:deprecation")
+}
 
 
 configurations.all {

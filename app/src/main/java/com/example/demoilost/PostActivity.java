@@ -40,6 +40,12 @@ import java.util.*;
 
 import okhttp3.*;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
+
+
 public class PostActivity extends AppCompatActivity {
 
     // Constants
@@ -47,6 +53,9 @@ public class PostActivity extends AppCompatActivity {
     private static final int REQUEST_GALLERY = 102;
     private static final int REQUEST_AUTOCOMPLETE = 1001;
     private static final int CAMERA_PERMISSION_CODE = 200;
+    private ActivityResultLauncher<Intent> galleryLauncher;
+    private ActivityResultLauncher<Intent> autocompleteLauncher;
+
 
     // Views
     private ImageView photoImageView;
@@ -67,6 +76,7 @@ public class PostActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
 
+        initActivityLaunchers();
         initViews();
         initListeners();
         initPlacesApi();
@@ -91,7 +101,7 @@ public class PostActivity extends AppCompatActivity {
         selectPhotoButton.setOnClickListener(v -> {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             intent.setType("image/*");
-            startActivityForResult(intent, REQUEST_GALLERY);
+            galleryLauncher.launch(intent);
         });
 
         postButton.setOnClickListener(v -> attemptPost());
@@ -138,7 +148,7 @@ public class PostActivity extends AppCompatActivity {
     private void openAutocomplete() {
         List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.ADDRESS, Place.Field.LAT_LNG);
         Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields).build(this);
-        startActivityForResult(intent, REQUEST_AUTOCOMPLETE);
+        autocompleteLauncher.launch(intent);
     }
 
     private void uploadImageToImgur(Uri imageUri) {
@@ -230,25 +240,27 @@ public class PostActivity extends AppCompatActivity {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
-    // Activity result
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_AUTOCOMPLETE && resultCode == RESULT_OK) {
-            Place place = Autocomplete.getPlaceFromIntent(data);
-            locationEditText.setText(place.getAddress());
-            geoPointFromSearch = new GeoPoint(place.getLatLng().latitude, place.getLatLng().longitude);
-        }
 
-        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK && cameraPhotoUri != null) {
-            selectedPhotoUri = cameraPhotoUri;
-            photoImageView.setImageURI(cameraPhotoUri);
-        }
+    private void initActivityLaunchers() {
+        galleryLauncher = registerForActivityResult(
+                new StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        selectedPhotoUri = result.getData().getData();
+                        photoImageView.setImageURI(selectedPhotoUri);
+                    }
+                });
 
-        if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK && data != null) {
-            selectedPhotoUri = data.getData();
-            photoImageView.setImageURI(selectedPhotoUri);
-        }
+        autocompleteLauncher = registerForActivityResult(
+                new StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Place place = Autocomplete.getPlaceFromIntent(result.getData());
+                        locationEditText.setText(place.getAddress());
+                        geoPointFromSearch = new GeoPoint(place.getLatLng().latitude, place.getLatLng().longitude);
+                    }
+                });
     }
+
 }
