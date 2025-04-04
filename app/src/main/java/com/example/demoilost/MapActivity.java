@@ -152,11 +152,7 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
             geocoder.getFromLocationName(addressText, 1, new Geocoder.GeocodeListener() {
                 @Override
                 public void onGeocode(@NonNull List<Address> addresses) {
-                    if (!addresses.isEmpty()) {
-                        updateMapFromAddress(addresses.get(0), addressText);
-                    } else {
-                        onNotFound.run();
-                    }
+                    handleAddresses(addresses, addressText, onNotFound);
                 }
 
                 @Override
@@ -169,17 +165,22 @@ public class MapActivity extends AppCompatActivity implements OnMapReadyCallback
                 try {
                     @SuppressWarnings("deprecation")
                     List<Address> addresses = geocoder.getFromLocationName(addressText, 1);
-                    if (!addresses.isEmpty()) {
-                        updateMapFromAddress(addresses.get(0), addressText);
-                    } else {
-                        onNotFound.run();
-                    }
+                    handleAddresses(addresses, addressText, onNotFound);
                 } catch (IOException e) {
                     postToast("Error finding location: " + e.getMessage());
                 }
             });
         }
     }
+
+    private void handleAddresses(List<Address> addresses, String addressText, Runnable onNotFound) {
+        if (!addresses.isEmpty()) {
+            updateMapFromAddress(addresses.get(0), addressText);
+        } else {
+            onNotFound.run();
+        }
+    }
+
 
 
 

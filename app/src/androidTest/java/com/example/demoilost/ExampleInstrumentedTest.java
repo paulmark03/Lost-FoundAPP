@@ -555,16 +555,16 @@ public class ExampleInstrumentedTest {
 
     //DM002
     @Test
-    public void C4testMessagingSendImage() throws InterruptedException {
+    public void C4testMessagingSendImage() {
         ActivityScenario.launch(LoginActivity.class);
 
         onView(withId(R.id.email)).perform(typeText("test@test.com"), closeSoftKeyboard());
         onView(withId(R.id.password)).perform(typeText("dev123"), closeSoftKeyboard());
         onView(withId(R.id.loginButton)).perform(click());
 
-        Thread.sleep(2000);
+        onIdle();
         onView(withId(R.id.bottom_chat)).perform(click());
-        Thread.sleep(2000);
+        onIdle();
 
         // Click the first visible chat to open ChatActivity
         onView(FirstViewMatcher.first(allOf(
@@ -572,7 +572,7 @@ public class ExampleInstrumentedTest {
                 isDescendantOfA(withId(R.id.messageRecyclerView))
         ))).perform(click());
 
-        Thread.sleep(2000);
+        onIdle();
 
         // Get ChatActivity instance from foreground
         final ChatActivity[] activityRef = new ChatActivity[1];
@@ -595,7 +595,7 @@ public class ExampleInstrumentedTest {
         Uri testImageUri = Uri.parse("android.resource://" + activity.getPackageName() + "/" + R.drawable.test_image);
         activity.uploadImageToImgur(testImageUri);
 
-        Thread.sleep(5000); // Wait for upload + Firestore write
+        onIdle(); // Wait for upload + Firestore write
 
         // Verify image is shown in chat
         onView(withId(R.id.chatRecyclerView))
